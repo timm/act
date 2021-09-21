@@ -76,5 +76,5 @@ mytmux() {
     tmux attach-session -t $session
   fi
 }
-
+hi
 mytmux
