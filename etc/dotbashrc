@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# vim: ft=bash ts=2 sw=2 sts=2 et :
+  
+hi() { 
+  tput bold; tput setaf 5
+  cat<<-'EOF'
+   ,=""=,
+  c , _,{
+  /\  @ )                 __
+ /  ^~~^\          <=.,__/ '}=
+(_/ ,, ,,)          \_ _>_/~
+ ~\_(/-\)'-,_,_,_,-'(_)-(_)  -Naughty
+
+	EOF
+  tput bold; tput setaf 241
+  echo "Short cuts:"
+  alias | sed 's/alias /  /'
+  echo ""
+  tput sgr0
+}
+
+here="$(dirname $(cd $( dirname "${BASH_SOURCE[0]}" ) && pwd ))"
+
+alias ..='cd ..'
+alias ...='cd ../../../'
+
+alias bye="gp; tmux detach"
+alias eg="python3.9 eg.py "
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias etch=".  $here/etc/h "
+alias gp="git add *;git commit -am save;git push;git status"
+alias grep='grep --color=auto'
+alias h="history"
+alias hello="git pull"
+alias ls="ls -G"
+alias tmux="tmux -f $here/etc/tmux-conf"
+alias vi="vim -u $here/etc/vimrc "
+alias vims="vim +PluginInstall +qall"         
+alias pdoc="$HOME/Library/Python/3.8/bin/pdoc"
+
+
+doc1() { _doc /Library/Frameworks/Python.framework/Versions/3.9/bin/pdoc; }
+doc2() { _doc /usr/local/bin/pdoc; }
+
+_doc() {
+  pdoc=$1 
+  (cd $here
+  logo="https://github.com/timm/evenless/raw/main/etc/img/evenless.png"
+  foot="Evenless v0.1 (c) 2021 Tim Menzies, unlicense.org. Share and enjoy."
+  url="http://github.com/timm/evenless/blob/main/evenless"
+  $pdoc -e evenless=$url  --no-search --logo $logo --footer-text "$foot" -o $here evenless.py
+  mv $here/evenless.html $here/index.html
+  $pdoc -e evenless=$url  --no-search --logo $logo --footer-text "$foot"          evenless.py)
+}
+here() { cd $1; basename `pwd`; }
+
+PROMPT_COMMAND='echo -ne "🌱 $(git branch 2>/dev/null | grep '^*' | colrm 1 2):";PS1="$(here ..)/$(here .):\!\e[m ▶ "'
+hi
