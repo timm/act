@@ -56,4 +56,25 @@ _doc() {
 here() { cd $1; basename `pwd`; }
 
 PROMPT_COMMAND='echo -ne "🌱 $(git branch 2>/dev/null | grep '^*' | colrm 1 2):";PS1="$(here ..)/$(here .):\!\e[m ▶ "'
-hi
+
+mytmux() {
+  if [ -z "$TMUX" ]; then
+    session=$RANDOM
+    tmux start-server
+    sleep 1
+    tmux new-session -d -s $session  
+    tmux send-keys "bash --init-file $here/dotbashrc -i "  C-m  
+
+    tmux splitw -h -p 20
+    tmux selectp -t 1
+    tmux send-keys "bash  --init-file $here/dotbashrc -i"  C-m  "hi" C-m
+
+    tmux splitw -v  -p 5
+    tmux selectp -t 2
+    tmux send-keys "bash  --init-file $here/dotbashrc -i"  C-m  "htop"  C-m
+
+    tmux attach-session -t $session
+  fi
+}
+
+mytmux
