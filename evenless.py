@@ -49,6 +49,7 @@ class Num(Col):
     super().__init__(*l,**kw)
 
   def add(i, x):
+    "increment `mu,sd,lo,hi`"
     d     = x - i.mu
     i.mu += d / i.n
     i.m2 += d * (x - i.mu)
@@ -57,20 +58,24 @@ class Num(Col):
     if x > i.hi: i.hi = x
 
   def sub(i, x):
+    "decrement `mu,sd,lo,hi`"
     d     = x - i.mu
     i.mu -= d / i.n
     i.m2 -= d * (x - i.mu)
     i.sd  = 0 if i.m2<0 else (0 if i.n<2 else ((i.m2/(i.n-1))**.5))
 
 class Sym(Col):
+  "counter for symbols"
   def __init__(i,*l,**kw):
     i.has = {}
     super().__init__(*l,**kw)
 
   def add(i,x):
+    "increment symbol counts"
     if x != "?": i.has[x] = 1 + i.has.get(x,0)
 
   def sub(i,x):
+    "decrement symbol counts"
     if x != "?": i.has[x] = max(0, i.has.get(x,0) - 1)
 
 def csv(file, sep=",", dull=r'([\n\t\r ]|#.*)'):
@@ -83,9 +88,6 @@ def csv(file, sep=",", dull=r'([\n\t\r ]|#.*)'):
       s=re.sub(dull,"",s)
       if s: yield [atom(x) for x in s.split(sep)]
 
-def msort(m,c):
- return sorted(m, key = lambda z: (0, float(z[c]))
-                        if z[c].isdigit() else (1, z[c]))
 
 
 m = [ 
@@ -99,16 +101,7 @@ m = [
 for c in range(4):
   print("")
   print(c)
-  [print("\t",x) for x in msort(m,c)]
 
-
-def dt(m):
-  goal = lambda s: "!" in s or "+" in s or "-" in s
-  head, data = m[0], m[1:]
-  x = set([n for n,s in enumerate(head) if not goal(s)])
-  skip = set([n for n,s in enumerate(head) if "?" in s])
-  for col in x:
-    m = msort(m,col)
 
 class Eg:
   all, crash = {}, -1
