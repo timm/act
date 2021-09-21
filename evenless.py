@@ -1,4 +1,4 @@
-import math,argparse,functools
+import math,argparse,random,functools,traceback
 from copy import deepcopy as kopy
 sq=math.sqrt
 
@@ -28,7 +28,7 @@ class o:
 
 class Col(o):
   "generic columns  stuff"
-  def __init__(i,at,txt,init=[]):
+  def __init__(i,at=0,txt="",init=[]):
     i.at,i.txt,i.n,i.w = at,txt,0,-1 if "-" in txt else 1
     [i + x for x in init]
 
@@ -42,27 +42,34 @@ class Col(o):
     if x != "?":
       i.n -= 1; i.sub(x)
 
+  def add(i,x): ...
+  def sub(i,x): ...
+
 class Num(Col):
   "counter for numbers"
   def __init__(i,*l,**kw):
     i.mu,i.m2,i.sd,i.lo,i.hi = 0,0,0,1E31,-1E31
     super().__init__(*l,**kw)
+  
+  def _sd(i): return 0 if i.m2<0 or i.n<2 else (i.m2/(i.n-1))**.5
 
   def add(i, x):
     "increment `mu,sd,lo,hi`"
     d     = x - i.mu
     i.mu += d / i.n
     i.m2 += d * (x - i.mu)
-    i.sd  = 0 if i.m2<0 else (0 if i.n<2 else ((i.m2/(i.n-1))**.5))
+    i.sd  = i._sd()
     if x < i.lo: i.lo = x
     if x > i.hi: i.hi = x
+   
+  def prep(i,x): return float(x)
 
   def sub(i, x):
     "decrement `mu,sd,lo,hi`"
     d     = x - i.mu
     i.mu -= d / i.n
     i.m2 -= d * (x - i.mu)
-    i.sd  = 0 if i.m2<0 else (0 if i.n<2 else ((i.m2/(i.n-1))**.5))
+    i.sd  = i._sd()
 
 class Sym(Col):
   "counter for symbols"
@@ -88,7 +95,9 @@ def csv(file, sep=",", dull=r'([\n\t\r ]|#.*)'):
       s=re.sub(dull,"",s)
       if s: yield [atom(x) for x in s.split(sep)]
 
-
+def ent(d):
+  n =     sum(v   for v in d.values())
+  return -sum(v/n*math.log2(v/n) for v in d.values())
 
 m = [ 
       [ 1,3, 20, 100, 3, 3, 2, "?", 4, "?", 2], 
@@ -102,6 +111,16 @@ for c in range(4):
   print("")
   print(c)
 
+def what(s): return Col if s in "?" else (Num if s[0].isupper() else Sym)
+def goal(s): return "+" in s or "-" in s or "!" in s
+def skip(s): return "?" in s
+
+def tree(m):
+  o(head = m[0],
+    rows = m[1:],
+    cols = set([what(s)(n,s) for n,s in enumerate(head) if not skip(s)]),
+    y    = set([col          for col in cols if goal(col.txt)]))
+  o.x = cols - o.x
 
 class Eg:
   all, crash = {}, -1

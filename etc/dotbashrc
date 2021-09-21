@@ -46,7 +46,7 @@ doc2() { _doc /usr/local/bin/pdoc; }
 _doc() {
   pdoc=$1 
   (cd $here
-  logo="https://github.com/timm/evenless/raw/main/etc/img/evenless.png"
+  logo="https://github.com/timm/evenless/raw/main/etc/img/logo.png"
   foot="Evenless v0.1 (c) 2021 Tim Menzies, unlicense.org. Share and enjoy."
   url="http://github.com/timm/evenless/blob/main/evenless"
   $pdoc -e evenless=$url  --no-search --logo $logo --footer-text "$foot" -o $here evenless.py
