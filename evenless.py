@@ -29,7 +29,7 @@ class o:
 class Col(o):
   "generic columns  stuff"
   def __init__(i,at=0,txt="",init=[]):
-    i.at,i.txt,i.n,i.w = at,txt,0,-1 if "-" in txt else 1
+    i.at,i.txt,i.n,i.w = at,txt,0, -1 if "-" in txt else 1
     [i + x for x in init]
 
   def __add__(i,x):
@@ -43,6 +43,11 @@ class Col(o):
       i.n -= 1; i.sub(x)
 
   def add(i,x): ...
+
+  def clone(i):
+    "Return something with the same structure, but no data"
+    i.__class__(at=i.at, txt=i.txt)
+
   def sub(i,x): ...
 
 class Num(Col):
@@ -51,23 +56,37 @@ class Num(Col):
     i.mu,i.m2,i.sd,i.lo,i.hi = 0,0,0,1E31,-1E31
     super().__init__(*l,**kw)
   
-  def _sd(i): return 0 if i.m2<0 or i.n<2 else (i.m2/(i.n-1))**.5
 
   def add(i, x):
     "increment `mu,sd,lo,hi`"
     d     = x - i.mu
     i.mu += d / i.n
     i.m2 += d * (x - i.mu)
-    i.sd  = i._sd()
+    i.sd  = i.sd()
     if x < i.lo: i.lo = x
     if x > i.hi: i.hi = x
    
-  def sub(i, x):
-    "decrement `mu,sd,lo,hi`"
+  def dist(i,x,y):
+    "separation  `x`  and `y`"
+    norm = lambda x: 0 if abs(i.hi-i.lo) < 1E-31 else (x-i.lo) / (i.hi-i.lo)
+    if x=="?":
+      y  = norm(y); x= 0 if y>0.5 else 1
+    elif y=="?":
+      x = norm(x); y= 0 if x>0.5 else 1
+    else:
+      x,y = norm(x), norm(y)
+    return abs(x-y)
+
+  def sd(i): 
+    "return variability around the expected value"
+    return 0 if i.m2<0 or i.n<2 else (i.m2/(i.n-1))**.5
+
+  def sub(i,x):
+    "decrements `mu,sd,lo,hi`"
     d     = x - i.mu
     i.mu -= d / i.n
     i.m2 -= d * (x - i.mu)
-    i.sd  = i._sd()
+    i.sd  = i.sd()
 
 class Sym(Col):
   "counter for symbols"
@@ -79,23 +98,41 @@ class Sym(Col):
     "increment symbol counts"
     if x != "?": i.has[x] = 1 + i.has.get(x,0)
 
+  def dist(i,x,y):
+    "separation  `x`  and `y`"
+    return 0 if x==y else 1
+
+  def entropy(i): 
+    "entropy"
+    return -sum(v/i.n*math.log2(v/i.n) for v in d.values())
+
   def sub(i,x):
-    "decrement symbol counts"
+    "decrements symbol counts"
     if x != "?": i.has[x] = max(0, i.has.get(x,0) - 1)
 
-def csv(file, sep=",", dull=r'([\n\t\r ]|#.*)'):
-  "read csv files"
-  def atom(s):
-    try: float(s)
-    except Exception: return s
-  with open(file) as fp:
-    for s in fp:
-      s=re.sub(dull,"",s)
-      if s: yield [atom(x) for x in s.split(sep)]
+class Sample(o):
+  "Stores rows, summarizes in columns"
+  def __init__(i,my,init=[],keep=True): 
+    i.my,i.head,i.rows,i.cols,i.x,i.y,i.keep = my,[],[],[],{},{},keep
+    [i + x for x in init]
 
-def ent(d):
-  n =     sum(v   for v in d.values())
-  return -sum(v/n*math.log2(v/n) for v in d.values())
+  def __add__(i,lst):
+    if i.cols:
+      [col + x for col,x in zip(i.cols,lst)]
+      if i.keep:
+        i.rows += [lst]
+    else:
+      i.head = lst
+      for c,s in enumerate(lst):
+        what = Col if "?" in s else (Num if s[0].isupper() else Sym)
+        new = what(c,s)
+        i.cols += [new]
+        if "?" not in s:
+          (i.y if "+" in s or "-" in s or "!" in s else i.x)[c] = new
+
+  def clone(i,init=[]):
+    "Return something with the same structure, but no data"
+    return Sample(my=i.my, init=[i.head]+init, keep=i.keep)
 
 m = [ 
       [ 1,3, 20, 100, 3, 3, 2, "?", 4, "?", 2], 
@@ -109,25 +146,29 @@ for c in range(4):
   print("")
   print(c)
 
-class Sample(o):
+def csv(file, sep=",", dull=r'([\n\t\r ]|#.*)'):
+  "read csv files"
+  def atom(s):
+    try: float(s)
+    except Exception: return s
+  with open(file) as fp:
+    for s in fp:
+      s=re.sub(dull,"",s)
+      if s: yield [atom(x) for x in s.split(sep)]
 
-  def what(s): return Col if s in "?" else (Num if s[0].isupper() else Sym)
-  def goal(s): return "+" in s or "-" in s or "!" in s
-  def skip(s): return "?" in s
+def dist(s,xs,ys):
+  d,n = 0, 1E-32
+  for col,x in pairs(xs,  s.x):
+    inc = 1 if x=="?" and y=="?" else col.dist(x, ys[col.at])
+    d  += inc**s.my.p
+  return (d/n)**(1/s.my.p)
 
-  def __init__(i.keep=True,init=[]): 
-    i.head,i.rows,i.cols,i.x,i.y,i.keep = [],[],[,[],[],keep
-    [i + x for x in init]
-
-  def __add__(i,lst):
-    if i.cols:
-      lst = [col + x for col,x in zip(i.cols,lst)]
-    else:
-    i.rows = m[1:]
-      cols = set([what(s)(n,s) for n,s in enumerate(head) if not skip(s)]),
-      y    = set([col          for col in cols if goal(col.txt)]))
-    o.x = cols - o.x
-  
+def pairs(x,cols={}):
+  if type(x)==dict:
+    for k,v in x.items(): yield cols[k],v
+  else:
+    for _,col in cols.items(): yield col,x[col.at]
+    
 class Eg:
   all, crash = {}, -1
 
