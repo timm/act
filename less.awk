@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# vim: filetype=awk :
 src() { cat<<'EOF' | gawk '{print  gensub(/\.([^0-9\\*\\$\\+])([a-zA-Z0-9_]*)/, 
                                           "[\"\\1\\2\"]","g", $0) }'
 
-func has(i,k)      { i.k[0]; delete i.k }
+func has(i,k) { i.k[0]; delete i.k }
 func add(i,x,   f) { f=FUNCTAB[i.is"Add"]; return @f(i,x) }
 
 func Obj(i)      { split("",i,"") }
