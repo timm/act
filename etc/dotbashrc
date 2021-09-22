@@ -3,6 +3,7 @@
  
 what=evenless 
 hi() { 
+  clear
   tput bold; tput setaf 5
   cat<<-'EOF'
 
