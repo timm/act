@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # vim: ft=bash ts=2 sw=2 sts=2 et :
-  
+ 
+what=evenless 
 hi() { 
   tput bold; tput setaf 5
   cat<<-'EOF'
+
    ,=""=,
   c , _,{
   /\  @ )                 __
@@ -46,14 +48,33 @@ doc2() { _doc /usr/local/bin/pdoc; }
 _doc() {
   pdoc=$1 
   (cd $here
-  logo="https://github.com/timm/evenless/raw/main/etc/img/logo.png"
-  foot="Evenless v0.1 (c) 2021 Tim Menzies, unlicense.org. Share and enjoy."
-  url="http://github.com/timm/evenless/blob/main/evenless"
-  $pdoc -e evenless=$url  --no-search --logo $logo --footer-text "$foot" -o $here evenless.py
-  mv $here/evenless.html $here/index.html
-  $pdoc -e evenless=$url  --no-search --logo $logo --footer-text "$foot"          evenless.py)
+  logo="https://github.com/timm/$what/raw/main/etc/img/logo.png"
+  foot="$what v0.1 (c) 2021 Tim Menzies, unlicense.org. Share and enjoy."
+  url="http://github.com/timm/$what/blob/main/$what"
+  $pdoc -e $what=$url  --no-search --logo $logo --footer-text "$foot" -o $here $what.py
+  mv $here/$what.html $here/index.html
+  $pdoc -e $what=$url  --no-search --logo $logo --footer-text "$foot"          $what.py)
 }
 here() { cd $1; basename `pwd`; }
 
 PROMPT_COMMAND='echo -ne "🌱 $(git branch 2>/dev/null | grep '^*' | colrm 1 2):";PS1="$(here ..)/$(here .):\!\e[m ▶ "'
+
+mytmux() {
+  if [ -z "$TMUX" ]; then
+    session=$RANDOM
+    tmux start-server
+    sleep 1
+    tmux new-session -d -s $session  
+
+    tmux splitw -h -p 20
+    tmux selectp -t 1
+
+    tmux splitw -v  -p 5
+    tmux selectp -t 2
+    tmux send-keys C-m  "htop"  C-m
+
+    tmux attach-session -t $session
+  fi
+}
 hi
+mytmux

@@ -62,8 +62,6 @@ class Num(Col):
     if x < i.lo: i.lo = x
     if x > i.hi: i.hi = x
    
-  def prep(i,x): return float(x)
-
   def sub(i, x):
     "decrement `mu,sd,lo,hi`"
     d     = x - i.mu
@@ -111,17 +109,25 @@ for c in range(4):
   print("")
   print(c)
 
-def what(s): return Col if s in "?" else (Num if s[0].isupper() else Sym)
-def goal(s): return "+" in s or "-" in s or "!" in s
-def skip(s): return "?" in s
+class Sample(o):
 
-def tree(m):
-  o(head = m[0],
-    rows = m[1:],
-    cols = set([what(s)(n,s) for n,s in enumerate(head) if not skip(s)]),
-    y    = set([col          for col in cols if goal(col.txt)]))
-  o.x = cols - o.x
+  def what(s): return Col if s in "?" else (Num if s[0].isupper() else Sym)
+  def goal(s): return "+" in s or "-" in s or "!" in s
+  def skip(s): return "?" in s
 
+  def __init__(i.keep=True,init=[]): 
+    i.head,i.rows,i.cols,i.x,i.y,i.keep = [],[],[,[],[],keep
+    [i + x for x in init]
+
+  def __add__(i,lst):
+    if i.cols:
+      lst = [col + x for col,x in zip(i.cols,lst)]
+    else:
+    i.rows = m[1:]
+      cols = set([what(s)(n,s) for n,s in enumerate(head) if not skip(s)]),
+      y    = set([col          for col in cols if goal(col.txt)]))
+    o.x = cols - o.x
+  
 class Eg:
   all, crash = {}, -1
 
