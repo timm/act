@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+f=$1
+shift
+src() { 
+  cat $f | gawk '{
+  print gensub(/\.([^0-9\\*\\$\\+])([a-zA-Z0-9_]*)/,
+               "[\"\\1\\2\"]","g", $0) }'
+}
+
+gawk --source "`src`" $*
