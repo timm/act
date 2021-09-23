@@ -66,9 +66,9 @@ def _xy(x,lo,hi):
 def far(i,row1,rows=None):
   """for `my.samples` selections from `rows`, sort the distance
   and return the item `my.far`-th to maximum distance"""
-  rows = rows or i.rows
-  rows = random.sample(rows, min(len(rows), i.my.samples))
-  rows = sorted([(dist(i,row1,row2),row2) for row2 in rows], key=first)
+  rows= rows or i.rows
+  rows= random.sample(rows, min(len(rows), i.my.samples))
+  rows= sorted([(dist(i,row1,row2),row2) for row2 in rows], key=first)
   return rows[int(i.my.far*len(rows))]
 
 def slurp(my,f):
