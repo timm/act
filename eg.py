@@ -73,7 +73,7 @@ def data(my):
 
 @eg
 def dists(my):
-  data= slurp(my,my.file)
+  data = slurp(my,my.file)
   for row1 in  random.sample(data.rows,10):
     d,row2 = far(data,row1)
     print("")

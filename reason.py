@@ -49,15 +49,15 @@ def _dist1(i,c,x,y):
   if   x==y=="?": return 1
   elif c in i.lo:
     lo, hi = i.lo[c], i.hi[c]
-    if   x=="?" : x,y = _xy(x,lo,hi)
-    elif y=="?" : y,x = _xy(y,lo,hi)
+    if   x=="?" : y,x = _xy(y,lo,hi)
+    elif y=="?" : x,y = _xy(x,lo,hi)
     else        : x,y = _norm(x,lo,hi), _norm(y,lo,hi)
     return abs(x-y)
   else:
     return 0 if x==y else 1
 
 def _norm(x,lo,hi): 
-  return 0 if abs(lo==hi)<1E-32 else (x-lo)/(hi-lo)
+  return 0 if abs(lo-hi)<1E-32 else (x-lo)/(hi-lo)
 
 def _xy(x,lo,hi): 
   x = _norm(x,lo,hi)
