@@ -14,9 +14,9 @@ def Data(my): return o(my=my,lo={}, hi={}, x={}, y={},rows=[], w={}, head=[])
 def Row(cells=[]): return o(cells=cells, used=False)
 
 def add(i,a): 
-  (_update if i.lo else _create)(i,a)
+  (_add if i.lo else _add0)(i,a)
 
-def _create(i,a):
+def _add0(i,a):
   skip   = lambda s: "?" in s
   less   = lambda s: "-" in s
   num    = lambda s: s[0].isupper()
@@ -28,7 +28,7 @@ def _create(i,a):
     (i.y if goal(s) else i.x)[c]=c
     if num(s): i.lo[c], i.hi[c] = 1E21,-1E21
 
-def _update(i,a):
+def _add(i,a):
   for c in i.lo: 
     z = a[c]
     if z=="?": continue
@@ -41,27 +41,22 @@ def dist(i,a,b):
   "Aha's distance metric."
   d, n = 0, 1E-32
   for c,x in pairs(a.cells, i.x):
-    d += _dist1(i, c, x, b.cells[c])**i.my.p
+    d += _dist(i, c, x, b.cells[c])**i.my.p
     n += 1
   return (d/n)**(1/i.my.p)
 
-def _dist1(i,c,x,y):
+def _dist(i,c,x,y):
   if x==y=="?": return 1
   elif c in i.lo:
     lo, hi = i.lo[c], i.hi[c]
-    if   x=="?": y,x= _xy(y,lo,hi)
-    elif y=="?": x,y= _xy(x,lo,hi)
+    if   x=="?": 
+      y = norm(y,lo,hi); x = 0 if y>.5 else 1
+    elif y=="?": 
+      x = norm(x,lo,hi); y = 0 if x>.5 else 1
     else       : x,y= _norm(x,lo,hi), _norm(y,lo,hi)
     return abs(x-y)
   else:
     return 0 if x==y else 1
-
-def _norm(x,lo,hi): 
-  return 0 if abs(lo-hi)<1E-32 else (x-lo)/(hi-lo)
-
-def _xy(x,lo,hi): 
-  x = _norm(x,lo,hi)
-  return x, (0 if x>.5 else 1)
 
 def far(i,row1,rows=None):
   """for `my.samples` selections from `rows`, sort the distance
@@ -69,7 +64,7 @@ def far(i,row1,rows=None):
   rows= rows or i.rows
   rows= random.sample(rows, min(len(rows), i.my.samples))
   rows= sorted([(dist(i,row1,row2),row2) for row2 in rows], key=first)
-  return rows[int(i.my.far*len(rows))]
+  return rows[ int(i.my.far*len(rows)) ]
 
 def slurp(my,f):
   i = Data(my)
@@ -94,6 +89,9 @@ def csv(file, sep=",", dull=r'([\n\t\r ]|#.*)'):
 def first(a):
   "return first item"
   return a[0]
+
+def norm(x,lo,hi): 
+  return 0 if abs(lo-hi)<1E-32 else (x-lo)/(hi-lo)
 
 def pairs(z, cols={}):
   """iterate across lists or dictionaries, returning items
