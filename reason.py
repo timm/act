@@ -46,12 +46,12 @@ def dist(i,a,b):
   return (d/n)**(1/i.my.p)
 
 def _dist1(i,c,x,y):
-  if   x==y=="?": return 1
+  if x==y=="?": return 1
   elif c in i.lo:
     lo, hi = i.lo[c], i.hi[c]
-    if   x=="?" : y,x = _xy(y,lo,hi)
-    elif y=="?" : x,y = _xy(x,lo,hi)
-    else        : x,y = _norm(x,lo,hi), _norm(y,lo,hi)
+    if   x=="?": y,x= _xy(y,lo,hi)
+    elif y=="?": x,y= _xy(x,lo,hi)
+    else       : x,y= _norm(x,lo,hi), _norm(y,lo,hi)
     return abs(x-y)
   else:
     return 0 if x==y else 1
