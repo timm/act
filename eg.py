@@ -66,18 +66,21 @@ def csvs(my):
 
 @eg
 def data(my):
-  d= slurp(my,my.file)
-  #for row in d.rows: print(row)
-  print(d.lo)
-  print(d.hi)
+  s= Sample(eg).slurp(my.file)
+  print(s.cols[1].lo)
+  print(s.cols[1].hi)
+
+p=lambda z: z #int(1000*z)/10
 
 @eg
 def dists(my):
-  data = slurp(my,my.file)
-  for row1 in  random.sample(data.rows,10):
-    d,row2 = far(data,row1)
+  s= Sample(my).slurp(my.file)
+  for row1 in  random.sample(s.rows,10):
+    d,row2 = s.far(row1)
+    #row3   = s.near(row1)
     print("")
     print(row1.cells)
-    print(row2.cells,int(100*d))
+    #print(row3.cells, p(s.dist(row1,row3)))
+    print(row2.cells,d)
 
 Eg.run()

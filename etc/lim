@@ -3,10 +3,57 @@
 
 BEGIN { num(i) ; add(i,20) }
 
-function has(i,k)    { i.k[0]; delete i.k }
-function add(i,x, f) { f=i.is"Add"; return @f(i,x) }
-
+function has(i,k)      { i.k["\t"]; delete i.k; return  length(i.k) }
+function more(i,k, n)  { n= 1+has(i,k); has(i[k],n+1); return n+a }
 function obj(i)      { split("",i,"") }
 function col(i,c,s)  { obj(i); i.n=0; i.at=c; i.is="col"; i.txt=s; i.w= s~/-/?-1:1 }
-function num(i,c,s)  { col(i,c,s);    i.is="num"; i.n=i.mu=i.m2=0; has(i,"has") }
-function numAdd(i,x) { print(10*x) }
+function num(i,c,s)  { col(i,c,s);    i.is="num"; i.lo=1E32;i.hi=-1E31}
+function sym(i,c,s)  { col(i,c,s);    i.is="sym"; i.n=0; has(i,"has") }
+function sample(i) {
+  has(i,"hi")
+  has(i,"lo")
+}
+
+function show(a,end,   i,sep) {
+  end = end ? end : "\n"
+  printf("{")
+  for(i in a)  {
+     if (typeof(a[i]) == "array")
+       show1(a[i]," ") 
+     a[i],sep)
+     sep=", " }
+  printf("}") }
+
+function main(i,f,  a,n) {
+  while((getline f)>0) {
+    split("",a,$0)
+    row(i,a) }
+  close(f) }
+   
+function row(i,a) { len(i.rows) ? _row(i,a) : _head(i,a) }
+
+function _row(i,a,   c,r,x) {
+  r = 1 + len(i.rows) 
+  for(c in a)
+    i.rows[r][c] = add(i.cols[c], a[c]) }
+
+function _head(i,a,    c,f) {
+  for(c in a) {
+    k = a[c] ~ /^[A-Z]/ ? "num" : "sym"
+    n = more(i,"cols")
+    @f(i.cols[n],c,a[c]) }}
+     
+function add(i,x,  f) { 
+  if (x!="?") {
+    i.n++
+    f = i.is"Add"; 
+    x = @f(i,x) }
+  return x }
+
+function numAdd(i,x) {
+  x = x+0
+  i.hi = x > i.hi ? x : i.hi
+  i.lo = x < i.lo ? x : i.lo 
+  return x}
+
+function symAdd(i,x) { i.has[x] = 1 + i.has[x]; return x }
