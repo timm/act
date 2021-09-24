@@ -1,4 +1,5 @@
 import re,math,random,functools
+from math import inf
 
 CONFIG = dict(    
   far  = (float,0.9, "how far to reach for 'distant' examples"),
@@ -10,85 +11,98 @@ CONFIG = dict(
   todo = (str,  "",   "todo: function (to be run at start-up)"),     
   Todo = (str, False, "list available items for -t"))     
 
-def Data(my): return o(my=my,lo={}, hi={}, x={}, y={},rows=[], w={}, head=[])
-def Row(cells=[]): return o(cells=cells, used=False)
-
-def add(i,a): 
-  (_add if i.lo else _add0)(i,a)
-
-def _add0(i,a):
-  skip   = lambda s: "?" in s
-  less   = lambda s: "-" in s
-  num    = lambda s: s[0].isupper()
-  goal   = lambda s: "!" in s or "+" in s or "-" in s
-  i.head = a
-  for c,s in enumerate(a):
-    if skip(s): continue
-    i.w[c] = -1 if less(s) else 1
-    (i.y if goal(s) else i.x)[c]=c
-    if num(s): i.lo[c], i.hi[c] = 1E21,-1E21
-
-def _add(i,a):
-  for c in i.lo: 
-    z = a[c]
-    if z=="?": continue
-    a[c]    = z = float(z)
-    i.lo[c] = min(z, i.lo[c])
-    i.hi[c] = max(z, i.hi[c])
-  i.rows += [Row(cells=a)]
-
-def dist(i,a,b):
-  "Aha's distance metric."
-  d, n = 0, 1E-32
-  for c,x in pairs(a.cells, i.x):
-    d += _dist(i, c, x, b.cells[c])**i.my.p
-    n += 1
-  return (d/n)**(1/i.my.p)
-
-def _dist(i,c,x,y):
-  if x==y=="?": return 1
-  elif c in i.lo:
-    lo, hi = i.lo[c], i.hi[c]
-    if   x=="?": 
-      y = norm(y,lo,hi); x = 0 if y>.5 else 1
-    elif y=="?": 
-      x = norm(x,lo,hi); y = 0 if x>.5 else 1
-    else       : x,y= _norm(x,lo,hi), _norm(y,lo,hi)
-    return abs(x-y)
-  else:
-    return 0 if x==y else 1
-
-def far(i,row1,rows=None):
-  """for `my.samples` selections from `rows`, sort the distance
-  and return the item `my.far`-th to maximum distance"""
-  rows= rows or i.rows
-  rows= random.sample(rows, min(len(rows), i.my.samples))
-  rows= sorted([(dist(i,row1,row2),row2) for row2 in rows], key=first)
-  return rows[ int(i.my.far*len(rows)) ]
-
-def slurp(my,f):
-  i = Data(my)
-  for a in csv(f): add(i,a)
-  return i
-
-#----------------------------------------------------------
 class o:
   "return a class can print itself (hiding 'private' keys)"
   def __init__(i, **d)  : i.__dict__.update(d)
   def __repr__(i) : return "{"+ ', '.join([
     f":{k} {v}" for k, v in i.__dict__.items() if  k[0] != "_"])+"}"
 
+class Col(o):
+  def __init__(at=0,txt=""): i,n,i.at,i.txt = 0,at,txt
+  def add(i,x): 
+    if x == "?": return x
+    i.n += 1
+    return i.add1(i,x)
+  def add1(i,x): ...
+
+class Num(Col):
+  def __init__(**k): 
+    super().__init__(**k); i.lo,i.hi,i.w = inf,-inf,-1 if "-" in i.txt else 1
+  def add1(i,x): 
+    x    = float(x)
+    i.lo = min(x, i.lo)
+    i.hi = max(x, i.hi)
+    return x
+  def dist(i,x,y):
+    if x=="?" : x = i.lo if y > (i.lo + i.hi) / 2 else i.hi
+    if y=="?" : y = i.lo if x > (i.lo + i.hi) / 2 else i.hi
+    return abs(norm(x, i.lo, i.hi) - norm(y, i.lo, i.hi))
+
+class Sym(Col):
+  def __init__(**k): 
+    super().__init__(**k); i.has = {}
+  def add1(i,x): i.has[x] = 1 + i.has.get(x,0); return x
+  def dist(i,x,y): return 0 if x==y else 1
+
+class Sample(o):
+  def __init__(i,my,keep=True): 
+    i.my,i.cols,i.x,i.y,i.keep,i.klass = my,{},{},{},keep,None
+
+  def add(i,lst):
+    "Update headers and rows."
+    if not i.cols: # First time. Create column headers
+      for c,s in enumerate(lst):
+        k= Col if "?"in s else (Num if "!"in s or "+"in s or "-"in s else Sym)
+        new = k(c,s)
+        i.cols[c] = new  # cols now unempty so, next time, we go to the 'else'
+        if "?" not in s:
+          if "!" in s: i.klass = new
+          (i.y if s[0].isupper() else i.x)[c] = new
+    else: # After first time, update column headers and rows 
+      lst = [col.add( lst[col.at] )  for col in i.cols.values()]
+      if i.keep:
+        i.rows += [Row(cells = lst)]
+
+  def dist(i,a,b):
+    "Aha's distance metric."
+    d, n = 0, 1E-32
+    for col,x in pairs(a, i.x):
+      inc = 1 if x==y=="?" else col.dist(x, b.cells[col.at])
+      d  += inc**i.my.p
+      n  += 1
+    return (d/n)**(1/i.my.p)
+  
+  def nearest(i,row1,rows=None, least=inf):
+    "return the thing nearest `row1`"
+    for row2 in rows or i.rows:
+      if id(row1) != id(row2):
+        d = i.dist(row1,row2)
+        if d < least: least, out = d, row2
+    return out
+   
+  def slurp(i,f):
+    "Import from csv file `f`."
+    for a in csv(f): i.add(a)
+    return i
+
+class Row(o):
+  def __init__(i,sample, cells=[]): i.cells,i.sample = cells,sample
+  def evaluated(i):
+    "Evaluated if the y values are known."
+    for col in i.sample.y.values():
+      if i.cells[col.at] != "?": return True
+    return False
+
 def csv(file, sep=",", dull=r'([\n\t\r ]|#.*)'):
   "read csv files"
   with open(file) as fp:
     for s in fp:
       s=re.sub(dull,"",s)
-      if s: 
-        yield s.split(sep)
+      if s: yield s.split(sep)
 
-def first(a):
+def first(lst):
   "return first item"
-  return a[0]
+  return lst[0]
 
 def norm(x,lo,hi): 
   return 0 if abs(lo-hi)<1E-32 else (x-lo)/(hi-lo)
@@ -97,8 +111,9 @@ def pairs(z, cols={}):
   """iterate across lists or dictionaries, returning items
   and their index (or key). if `cols` is supplied, restrict
   the iteration to `cols`."""
+  z = z.cells
   if cols:
-    for c in cols: yield c, z[c]
+    for col in cols.values(): yield col, z[col.at]
   else:
-    for c,x in (z.items() if type(z)==dict else enumerate(z)):
-      yield c,x
+    for col,x in (z.items() if type(z)==dict else enumerate(z)):
+      yield col,x
