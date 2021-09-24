@@ -27,7 +27,8 @@ about= {
         seed= {10013  ,'Seed for random numbers'},
         wild= {false  ,'Run egs, no protection (wild mode)'}} end }
 
--- # Some useful utilities
+-- ## Some useful utilities
+
 -- Standard short cuts
 
 isa=setmetatable
@@ -38,6 +39,8 @@ function color(s,...)
   local all = {red=31, green=32, yellow=33, purple=34}
   print('\27[1m\27['.. all[s] ..'m'..string.format(...)..'\27[0m') end
 
+-- ### Random numbers
+
 -- `srand` resets the random number seed;   
 -- `randi,rand` generate random integers or floats
 function srand(s)     Seed = s or 10013 end
@@ -47,6 +50,8 @@ function rand(lo,hi,     mult,mod)
     mult, mod = 16807, 2147483647
     Seed = (mult * Seed) % mod 
     return lo + (hi-lo) * Seed / mod end 
+
+-- ### Command line, start-up
 
 -- All our options have keys. If any of those keys
 -- appear as command line flags, update the options.

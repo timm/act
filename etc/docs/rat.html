@@ -27,12 +27,189 @@
               <div class="sswrap ">
                 <a class="ss" href="#section-1">&#x00a7;</a>
               </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>#!/usr/bin/env lua</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">&#x00a7;</a>
+              </div>
               <p>vim: filetype=lua ts=2 sw=2 sts=2 et :</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">a</span><span class="hljs-params">()</span></span> <span class="hljs-keyword">return</span> a <span class="hljs-keyword">end</span></pre></div></div>
+<span class="hljs-keyword">local</span> b4={}; <span class="hljs-keyword">for</span> k,_ <span class="hljs-keyword">in</span> <span class="hljs-built_in">pairs</span>(<span class="hljs-built_in">_ENV</span>) <span class="hljs-keyword">do</span> b4[k]=k <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">local</span> about, isa,fmt,color,srand,randi,rand,Seed,fails,cli
+
+about= {
+  synopsis = <span class="hljs-string">[[
+         _   _
+        (q\_/p)    rat
+         /. .\     (c) Tim Menzies, 2021, unlicense.org
+   __   =\_t_/=    
+     )   /   \     Bayesian semi-supervised multi-objective
+    (   ((   ))    stakeholder-based rule generation.
+     \  /\) (/\
+  jgs `-\  Y  /
+         nn^nn
+    ]]</span>,
+   usage    = <span class="hljs-string">&quot;./rat&quot;</span>,
+   author   = <span class="hljs-string">&quot;Tim Menzies&quot;</span>,
+   copyright= <span class="hljs-string">&quot;(c) Tim Menzies, 2021, unlicense.org&quot;</span>,
+   options  = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span></span> <span class="hljs-keyword">return</span> {
+        far=  { <span class="hljs-number">.9</span>    ,<span class="hljs-string">&#x27;Where to look for far things&#x27;</span>},
+        loud= {<span class="hljs-literal">false</span>  ,<span class="hljs-string">&#x27;Set verbose&#x27;</span>},
+        p=    {<span class="hljs-number">2</span>      ,<span class="hljs-string">&#x27;Distance calculation exponent&#x27;</span>},
+        samples={<span class="hljs-number">256</span>  ,<span class="hljs-string">&quot;number of neighbors to explore&quot;</span>},
+        seed= {<span class="hljs-number">10013</span>  ,<span class="hljs-string">&#x27;Seed for random numbers&#x27;</span>},
+        wild= {<span class="hljs-literal">false</span>  ,<span class="hljs-string">&#x27;Run egs, no protection (wild mode)&#x27;</span>}} <span class="hljs-keyword">end</span> }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-3">&#x00a7;</a>
+              </div>
+              <h2 id="some-useful-utilities">Some useful utilities</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
+              </div>
+              <p>Standard short cuts</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+isa=<span class="hljs-built_in">setmetatable</span>
+fmt=<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(...)</span></span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">print</span>(<span class="hljs-built_in">string</span>.<span class="hljs-built_in">format</span>(...)) <span class="hljs-keyword">end</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">&#x00a7;</a>
+              </div>
+              <p>Pretty colors</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">color</span><span class="hljs-params">(s,...)</span></span>
+  <span class="hljs-keyword">local</span> all = {red=<span class="hljs-number">31</span>, green=<span class="hljs-number">32</span>, yellow=<span class="hljs-number">33</span>, purple=<span class="hljs-number">34</span>}
+  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;\27[1m\27[&#x27;</span>.. all[s] ..<span class="hljs-string">&#x27;m&#x27;</span>..<span class="hljs-built_in">string</span>.<span class="hljs-built_in">format</span>(...)..<span class="hljs-string">&#x27;\27[0m&#x27;</span>) <span class="hljs-keyword">end</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-6">&#x00a7;</a>
+              </div>
+              <h3 id="random-numbers">Random numbers</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-7">&#x00a7;</a>
+              </div>
+              <p><code>srand</code> resets the random number seed;<br><code>randi,rand</code> generate random integers or floats</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">srand</span><span class="hljs-params">(s)</span></span>     Seed = s <span class="hljs-keyword">or</span> <span class="hljs-number">10013</span> <span class="hljs-keyword">end</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randi</span><span class="hljs-params">(lo,hi)</span></span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">math</span>.<span class="hljs-built_in">floor</span>(<span class="hljs-number">0.5</span> + rand(lo,hi)) <span class="hljs-keyword">end</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">rand</span><span class="hljs-params">(lo,hi,     mult,mod)</span></span>
+    lo,hi = lo <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>, hi <span class="hljs-keyword">or</span> <span class="hljs-number">1</span>
+    mult, <span class="hljs-built_in">mod</span> = <span class="hljs-number">16807</span>, <span class="hljs-number">2147483647</span>
+    Seed = (mult * Seed) % <span class="hljs-built_in">mod</span> 
+    <span class="hljs-keyword">return</span> lo + (hi-lo) * Seed / <span class="hljs-built_in">mod</span> <span class="hljs-keyword">end</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-8">&#x00a7;</a>
+              </div>
+              <h3 id="command-line-start-up">Command line, start-up</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-9">&#x00a7;</a>
+              </div>
+              <p>All our options have keys. If any of those keys
+appear as command line flags, update the options.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cli</span><span class="hljs-params">(            out,b4,f)</span></span>
+  out, all = {},  about.options()
+  <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> <span class="hljs-built_in">pairs</span>(all) <span class="hljs-keyword">do</span> out[k]=v[<span class="hljs-number">1</span>] <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">for</span> i = <span class="hljs-number">1</span>,#args <span class="hljs-keyword">do</span>
+    <span class="hljs-keyword">if</span> args[i] == <span class="hljs-string">&quot;-h&quot;</span> <span class="hljs-keyword">then</span>  
+      <span class="hljs-built_in">print</span>(all.usage,<span class="hljs-string">&quot;\n&quot;</span>+about.synopsis)
+      <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> paris(about.options()) <span class="hljs-keyword">do</span> 
+        fmt(<span class="hljs-string">&quot;  -%-10s %-10s %s&quot;</span>,k,v[<span class="hljs-number">1</span>],v[<span class="hljs-number">2</span>]) <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">elseif</span> #args[i] &gt; <span class="hljs-number">1</span> <span class="hljs-keyword">then</span>
+      <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;-&quot;</span> == args[i]:<span class="hljs-built_in">sub</span>(<span class="hljs-number">1</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">then</span>
+        f  = args[i]:<span class="hljs-built_in">sub</span>(<span class="hljs-number">2</span>,#args[i])
+        b4 = all[f] 
+        <span class="hljs-keyword">if</span> b4 <span class="hljs-keyword">then</span>
+          new = (b4[<span class="hljs-number">1</span>]==<span class="hljs-literal">false</span> <span class="hljs-keyword">and</span> <span class="hljs-literal">true</span> <span class="hljs-keyword">or</span> (<span class="hljs-built_in">tonumber</span>(args[i+<span class="hljs-number">1</span>]) <span class="hljs-keyword">or</span> args[i+<span class="hljs-number">1</span>])) 
+          out[f] = new <span class="hljs-keyword">end</span> <span class="hljs-keyword">end</span> <span class="hljs-keyword">end</span> <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">return</span> out <span class="hljs-keyword">end</span>
+
+fails=<span class="hljs-number">0</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">run</span><span class="hljs-params">(f,    ok,msg)</span></span>
+  the=cli()
+  Seed = rand.srand(the.seed)
+  <span class="hljs-keyword">if</span> the.wild <span class="hljs-keyword">then</span> ok=True; f() <span class="hljs-keyword">else</span> ok,msg= <span class="hljs-built_in">pcall</span>(f) <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">if</span>   ok 
+  <span class="hljs-keyword">then</span> str.color(<span class="hljs-string">&quot;green&quot;</span>,<span class="hljs-string">&quot;%s&quot;</span>,f)
+  <span class="hljs-keyword">else</span> fails=fails+<span class="hljs-number">1</span>
+       str.color(<span class="hljs-string">&quot;red&quot;</span>,<span class="hljs-string">&quot;%s&quot;</span>,<span class="hljs-built_in">tostring</span>(msg)) <span class="hljs-keyword">end</span> <span class="hljs-keyword">end</span> 
+
+the=cli()
+<span class="hljs-keyword">for</span> k,_ <span class="hljs-keyword">in</span> <span class="hljs-built_in">pairs</span>(<span class="hljs-built_in">_ENV</span>) <span class="hljs-keyword">do</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> b4[k] <span class="hljs-keyword">then</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;?? &quot;</span>..k) <span class="hljs-keyword">end</span> <span class="hljs-keyword">end</span>
+<span class="hljs-built_in">os</span>.<span class="hljs-built_in">exit</span>(fails)</pre></div></div>
             
         </li>
         
