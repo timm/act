@@ -30,7 +30,7 @@ function main(i,f,  a,n) {
     row(i,a) }
   close(f) }
    
-function row(i,a) { len(i.rows) ? _row(i,a) : _head(i,a) }
+function row(i,a) { length(i.rows) ? _row(i,a) : _head(i,a) }
 
 function _row(i,a,   c,r,x) {
   r = 1 + len(i.rows) 
