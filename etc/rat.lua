@@ -27,12 +27,33 @@ about= {
         seed= {10013  ,'Seed for random numbers'},
         wild= {false  ,'Run egs, no protection (wild mode)'}} end }
 
--- ## Some useful utilities
-
 -- Standard short cuts
 
+-- infinity
+inf = 1E64
+-- Polymorphsim support
 isa=setmetatable
+-- printf-like printing; e.g. `fmt("%-10s, %5.sf","level", 22/7)`
 fmt=function (...) return print(string.format(...)) end
+
+-- ## Columns
+
+-- For numbers, symbols, things to skip
+local Num,Sym,Skip = {},{},{} 
+
+-- All columns know  their column number, column name, 
+function col(at,txt) 
+  return {at=at,txt=txt,n=0,w=txt:find("-") and -1 or 1} end
+
+function Num.new(at,txt) 
+  i = isa(col(at,txt),Num)
+  i.mu, i.m2,i.sd, i.lo,i.hi = 0,0,0,inf, -inf
+  return i end
+
+function Sym.new(at,txt)
+  i = isa(col(at,txt), Sym)
+  i.has={}
+  return i end
 
 -- Pretty colors
 function color(s,...)
