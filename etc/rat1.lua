@@ -22,17 +22,33 @@ about= {
    options  = function () return {
         far=  { .9    ,'Where to look for far things'},
         loud= {false  ,'Set verbose'},
-        p=    {2      ,'Distance calculation exponent'},
+        p=      {2    ,'Distance calculation exponent'},
         samples={256  ,"number of neighbors to explore"},
         seed= {10013  ,'Seed for random numbers'},
+        todo= {"hello",'startup action'},
         wild= {false  ,'Run egs, no protection (wild mode)'}} end }
 
 -- ## Some useful utilities
 
 -- Standard short cuts
 
-isa=setmetatable
 fmt=function (...) return print(string.format(...)) end
+
+function show(t,    s,sep,keys)
+  s, sep, keys = (t.name or "").."{", "", {}
+  for k,_ in pairs(t) do keys[1+#keys]=k end
+  table.sort(keys)
+  for _,k in pairs(keys) do s=s..sep..tostring(t[k]);sep=", " end
+  return s.."}"
+end
+
+function obj(i, name, new)
+   new = setmetatable(new or {}, i)
+  i.__tostring = show 
+  i.__index    = i
+  i._name      = name
+  return new end
+
 
 -- Pretty colors
 function color(s,...)
@@ -62,26 +78,34 @@ function cli(            out,b4,f)
     if args[i] == "-h" then  
       print(all.usage,"\n"+about.synopsis)
       for k,v in paris(about.options()) do 
-        fmt("  -%-10s %-10s %s",k,v[1],v[2]) end
+        fmt("  --%-10s %-10s %s",k,v[1],v[2]) end
     elseif #args[i] > 1 then
       if "-" == args[i]:sub(1,1) then
-        f  = args[i]:sub(2,#args[i])
-        b4 = all[f] 
-        if b4 then
-          new = (b4[1]==false and true or (tonumber(args[i+1]) or args[i+1])) 
-          out[f] = new end end end end
+        f  = args[i]:sub(3,#args[i])
+        old = out[f] 
+        assert(old,"flag '--"..f.."' not known") 
+        new = old==false and true or (tonumber(args[i+1]) or args[i+1]) 
+        assert(type(old)==type(new), "value '"..tostring(new).."' unknown")
+        out[f] = new end end end  
   return out end
 
-fails=0
-function run(f,    ok,msg)
-  the=cli()
+local Eg={}
+Eg["hello"] = function (the) show(the) end
+
+local fails=0
+function run(f,    ok,msg,tmp)
+  tmp  = cli()
   Seed = rand.srand(the.seed)
-  if the.wild then ok=True; f() else ok,msg= pcall(f) end
+  if   the.wild  
+  then ok, msg = true, f(tmp) 
+  else ok, msg = pcall(function() f(tmp) end) 
+  end
   if   ok 
   then str.color("green","%s",f)
   else fails=fails+1
+       if the.wild then print(debug.traceback()) end
        str.color("red","%s",tostring(msg)) end end 
 
-the=cli()
+the = cli()
 for k,_ in pairs(_ENV) do if not b4[k] then print("?? "..k) end end
 os.exit(fails)
