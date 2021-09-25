@@ -27,7 +27,7 @@ Note: validation  introduced very early.
 
 Short code. 
 - line   length max=80
-- tabs= 3  spaces
+- tabs= 3  spaces (yes, I know 2 is cooler but some large Lua projects use 3 so  let us bow  before their  wisdom).
 - Consider writing trailing `end`s on  same lines. 
 - Try  to  use one-line functions.
 
@@ -45,9 +45,21 @@ but also the help text for each option plus
 contact and license information
 for the code.
 
-No global variables: everything is declared `local` before use.
+No global variables: 
+- Everything is declared `local` before use.
+- first lines of code should  trap initial globals, 
+
+     local b4={}; for k,_ in pairs(_ENV) do b4[k]=k end
+
+- Then, second  last line (before any final returns) 
+  should  warn if  anything was added to  that global set.
+
+     for k,_ in pairs(_ENV) do if not b4[k] then print("?? "..k) end end
 
 Inheritance=no:  too much conceptual  overhead for  too  little gain,
+Once  you've got polymorphism going, the next net benefit of moving on to inheritance  
+may not be large
+https://doi.org/10.1109/52.676735.
 
 Polymorphism=yes: spreads out the code. New instances are defined using `isa`:
 
@@ -59,18 +71,22 @@ For example:
 do
    local col,with
    local Num,Sym={},{}
+
    function col(at,txt)  -- common slots
-      return {at=t, txt=txt, n=0, w=(txt:find("-") and -1 or 1)} end
-   function with(t1,t2)
-      for k,v in pairs(t2) do t1[k]=v end end
+      at  = at or 0
+      txt = txt or ""
+      w   = "-"==txt:sub(#s,#s) and -1 or 1
+      return {at=at, txt=txt, n=0, w=w} end
    
    function Sym:new(at, name) -- for symbolic columns
-      return obj(self,"Sym",
-         with(col(at,txt), {has={}, mode=None, most=0})) end
+      return obj(self,"Sym", with(col(at,txt), {has={}, mode="", most=0})) end
    
    function Num:new(at,txt)  -- for  numeric  columns
       return obj(self,"Num",
-         with(col(at,txt), {mu=0, m2=0, sd=0, lo=inf, hi= -inf})) end end
+         with(col(at,txt), {mu=0, m2=0, sd=0, lo= inf, hi= -inf})) end end
+
+   function with(2ddt1,t2)
+      for k,v in pairs(t2) do t1[k]=v end end
 ```
 
 
