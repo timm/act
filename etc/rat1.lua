@@ -28,8 +28,6 @@ about= {
         todo= {"hello",'startup action'},
         wild= {false  ,'Run egs, no protection (wild mode)'}} end }
 
--- ## Some useful utilities
-
 -- Standard short cuts
 
 fmt=function (...) return print(string.format(...)) end
@@ -49,23 +47,32 @@ function obj(i, name, new)
   i._name      = name
   return new end
 
+=======
+-- infinity
+inf = 1E64
+-- Polymorphsim support
+isa=setmetatable
+-- printf-like printing; e.g. `fmt("%-10s, %5.sf","level", 22/7)`
+fmt=function (...) return print(string.format(...)) end
 
--- Pretty colors
-function color(s,...)
-  local all = {red=31, green=32, yellow=33, purple=34}
-  print('\27[1m\27['.. all[s] ..'m'..string.format(...)..'\27[0m') end
+-- ## Columns
 
--- ### Random numbers
+-- For numbers, symbols, things to skip
+local Num,Sym,Skip = {},{},{} 
 
--- `srand` resets the random number seed;   
--- `randi,rand` generate random integers or floats
-function srand(s)     Seed = s or 10013 end
-function randi(lo,hi) return math.floor(0.5 + rand(lo,hi)) end
-function rand(lo,hi,     mult,mod)
-    lo,hi = lo or 0, hi or 1
-    mult, mod = 16807, 2147483647
-    Seed = (mult * Seed) % mod 
-    return lo + (hi-lo) * Seed / mod end 
+-- All columns know  their column number, column name, 
+function col(at,txt) 
+  return {at=at,txt=txt,n=0,w=txt:find("-") and -1 or 1} end
+
+function Num.new(at,txt) 
+  i = isa(col(at,txt),Num)
+  i.mu, i.m2,i.sd, i.lo,i.hi = 0,0,0,inf, -inf
+  return i end
+
+function Sym.new(at,txt)
+  i = isa(col(at,txt), Sym)
+  i.has={}
+  return i end
 
 -- ### Command line, start-up
 
@@ -92,20 +99,3 @@ function cli(            out,b4,f)
 local Eg={}
 Eg["hello"] = function (the) show(the) end
 
-local fails=0
-function run(f,    ok,msg,tmp)
-  tmp  = cli()
-  Seed = rand.srand(the.seed)
-  if   the.wild  
-  then ok, msg = true, f(tmp) 
-  else ok, msg = pcall(function() f(tmp) end) 
-  end
-  if   ok 
-  then str.color("green","%s",f)
-  else fails=fails+1
-       if the.wild then print(debug.traceback()) end
-       str.color("red","%s",tostring(msg)) end end 
-
-the = cli()
-for k,_ in pairs(_ENV) do if not b4[k] then print("?? "..k) end end
-os.exit(fails)
