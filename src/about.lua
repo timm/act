@@ -7,8 +7,8 @@
       \;;;/           In less than  250 LOC
   pb    /             
 --]]
-local ask
-local defaults=function()  return  {
+local ask, defaults
+function defaults()  return  {
   far=    ask("-f", .9,      'where to look for far things'),
   help=   ask("-h", false,   'show  help');
   int=    ask("-i", 1E62,    'largest number'),
