@@ -24,6 +24,13 @@ function show(t,    s,sep,keys)
    return s.."}"
 end
 
+function x(key,b4)
+   for n,z in pairs(arg) do
+      if key==z:sub(2,#k2) then
+         new = type(b4)=="boolean" and true or tonumber(arg[n+1]) or arg[n+1]
+         assert(type(new) == type(b4), "bad type for "..x)
+         return  new end end end
+
 -- ## Objects
 function obj(i, name, new)
    new = setmetatable(new or {}, i)

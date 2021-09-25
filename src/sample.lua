@@ -33,6 +33,9 @@ function Sample:new(inits,       new)
    for _,row in pairs(inits or {}) do new:add(row) end  
    return new end
  
+function Sample:add(t)
+   if #self.names > 0 then self:data(t) else self:header(t) end end
+
 function Sample:load(file) 
    for row in csv(file) do self:add(row) end 
    return self end
@@ -52,8 +55,5 @@ function  Sample:clone(inits,    new)
    new = Sample:new():add({self.names})
    for _,row in pairs(inits or {}) do new:add(row) end
    return new end
-
-function Sample:add(t)
-   if #self.names > 0 then self:data(t) else self:header(t) end end
 
 return {Num=Num,Sym=Sym,Skip=Skip}
