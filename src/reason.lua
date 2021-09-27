@@ -45,21 +45,27 @@ function csv(file,      split,stream,tmp)
            return t end
     else io.close(stream) end end end
 
-function sample()   return {head={},rows={},cols={},num={},sym={},x={},y={}} end
-function num(c,s)   return col(c,s, {hi=-1E64, lo=1E63, all={}}) end
-function sym(c,s)   return col(c,s, {has={}}) end
+function sample() return {head={},rows={},cols={},num={},sym={},x={},y={}} end
+function num(c,s) return col(c,s, {hi=-1E64, lo=1E63, all={}}) end
+function sym(c,s) return col(c,s, {has={}}) end
 function col(c,s,i) 
   i,s = i or {}, s or ""
   i.n, i.at, i.txt = 0, c, s
-  i.w = s == "-" and -1 or (s=="+" and 1 or 0) 
+  i.w = s:sub(#s,#s) == "-" and -1 or (s:sub(#s,#s) == "+" and 1 or 0) 
   return i end
 
 function add(s,t)
-  local klassp,nump,skipp,update,header
-  function klassp(s) return s:find"+" or s:find"-" or s:find"!" end
-  function nump(s)   return s:sub(1,1):match"[A-Z]" end
-  function skipp(s)  return s:find"?" end
-  function update(col,x)
+  local function isGoal(s) return s:find"+" or s:find"-" or s:find"!" end
+  local function isNum(s)  return s:sub(1,1):match"[A-Z]" end
+  local function isSkip(s) return s:find"?" end
+  local function header(c,x,       new,here)
+    new = (isSkip(x) and col or (isNum(x) and num or sym))(c,x)
+    s.cols[ 1+#s.cols ] = new
+    if not isSkip(x) then
+      here = isNum(x)  and s.num or s.sym; here[ 1+#here ] = new
+      here = isGoal(x) and s.y   or s.x  ; here[ 1+#here ] = new end 
+  end ------------------------
+  local function update(col,x)
     if x ~= "?" then 
       col.n = col.n + 1
       if   col.lo 
@@ -67,19 +73,12 @@ function add(s,t)
            col.lo = math.min(col.lo, x)
            col.hi = math.max(col.hi, x)
       else col.has[x] = 1+(col.has[x] or 0) end end 
-  end ------------------------------------------
-  function header(c,s,       new,here)
-    new = (skipp(s) and col or (nump(s) and num or sym))(c,s)
-    s.cols[ 1+#s.cols ] = new
-    if not skipp(s) then
-      here = nump(s)  and s.num or s.sym; here[ 1+#here ] = new
-      here = goalp(s) and s.y   or s.x  ; here[ 1+#here ] = new end
-  end -------------
+  end --------------
   if   #s.head == 0 
   then s.head = t
-       for c,s in pairs(t) do header(c,s) end
+       for c,x in pairs(t) do header(c,x) end
   else s.rows[ 1+#s.rows ] = t 
-       for c,col in pairs(s.cols) do update(col, t[c]) end end end 
+       for c,x in pairs(t) do update(cols[c],x) end end end 
 
 function main(the, s)
   srand(the.seed)
