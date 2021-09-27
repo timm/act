@@ -25,6 +25,9 @@ Note: validation  introduced very early.
 
 ## Coding standards
 
+- `fun0`: denotes an object constructors function.
+- `fun1`: denotes an update function to something made by `fun0`
+
 Short code. 
 - line   length max=80
 - tabs= 3  spaces (yes, I know 2 is cooler but some large Lua projects use 3 so  let us bow  before their  wisdom).
