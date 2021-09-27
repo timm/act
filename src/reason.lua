@@ -1,5 +1,5 @@
 local b4={}; for k,_ in pairs(_ENV) do b4[k]=k end
-local rand,some,col,num,sym,sample = {},{},{},{},{},{}
+local rand,some,cols,col,num,sym,sample = {},{},{},{},{},{},{}
 
 local function csv(file,      split,stream,tmp)
   stream = file and io.input(file) or io.input()
@@ -19,7 +19,7 @@ local function str(t1,  t2)
   return "{"..table.concat(t2,",  ").."}" end
 
 local function obj(self, new)
-  self.__tostring, self.__index = str,self 
+  self.__tostring, self.__index=str,self
   return setmetatable(new or {}, self) end
 
 function rand:new(seed)   return obj(rand,{seed=seed or 10014})  end
@@ -44,7 +44,7 @@ function col:new(c,s,i,      last)
 function col:add(x) if x ~="?"  then self.n = self.n+1 end end
 
 function num:new(c,s)  
-  return obj(num, col(c,s, {hi=-1E64, lo=1E63, some=some:new()})) end
+  return obj(num, col:new(c,s, {hi=-1E64, lo=1E63, some=some:new()})) end
 function num:add(x)
   if x ~="?"  then
     self.n = self.n + 1
@@ -52,38 +52,41 @@ function num:add(x)
     if x < self.lo then self.lo = x end
     if x > self.hi then self.hi = x end end end
 
-function sym:new(c,s) return obj(sym, col(c,s, {has={}})) end
+function sym:new(c,s) return obj(sym, col:new(c,s, {has={}})) end
 function sym:add(x)
   if x~="?" then 
     self.n = self.n+1
     self.has[x]=1+(self.has[x] or 0) end end
 
-function cols:new(sample,header) 
-  return obj(cols,{_sample=sample,names=header,all={},x={},y={}}) end
+function cols:new() return obj(cols,{all={},x={},y={}}) end
 function cols:add(row,rows) 
   rows[1+#rows] = row
-  for _,col in pairs(self.all) do col:add(row[col.at]) end  end
-function cols:complete()
+  for _,col in pairs(self.all) do col:add( row[col.at] ) end end
+function cols:complete(t,       new,here,what)
   local function isGoal(s) return s:find"+" or s:find"-" or s:find"!" end
   local function isNum(s)  return s:sub(1,1):match"[A-Z]" end
-  for at,txt in pairs(self.names) do 
-    new = (txt:find"-" and col or (isNum(txt) and num or sym0)):new(at,txt)
+  for at,txt in pairs(t) do 
+    what = txt:find"-" and col or (isNum(txt) and num or sym)
+    new  = what:new(at,txt)
     self.all[ 1+#self.all ] = new
     if not txt:find"~" then
-      here= isNum(txt)  and self.nums or self.syms; here[1+#here] = new end end
+      here = isGoal(txt) and self.y or self.x
+      here[1+#here] = new end end
   return self end
 
-function sample:new() 
-  return {head={},rows={},cols={},nums={},syms={},x={},y={}} end
+function sample:new() return obj(sample,{head={}, rows={},cols={}}) end
 function sample:add(row)
-  if #self.head==0 then 
-    self.cols=cols:new(self,row):compelte() 
+  if   #self.head==0 
+  then self.head = row
+       self.cols = cols:new():complete(row) 
   else self.cols:add(row, self.rows) end end
 
-function main(the, s)
-  srand(the.seed)
-  s = sampled()
-  for t in csv(the.data) do sample(s,t) end end
+local function main(the,     s,r)
+  print(str({a=1,b=2}))
+  print(1,str(the))
+  r = rand:new(the.seed)
+  s = sample:new()
+  for t in csv(the.data) do s:add(t) end end
 
 do 
   local function cli(t)
@@ -92,10 +95,10 @@ do
         type(b4)=="boolean" and true or tonumber(arg[n+1]) or arg[n+1] end end
       return b4 end end
 
-  main{data = cli{d="../data/auto93.csv"},
+  main({data = cli{d="../data/auto93.csv"},
        far  = cli{f=.9}, 
        p    = cli{p=2}, 
        some = cli{s=256}, 
-       seed = cli{S=10014}} end
+       seed = cli{S=10014}}) end
 
 for k,_ in pairs(_ENV) do if not b4[k] then print("?? "..k) end end
