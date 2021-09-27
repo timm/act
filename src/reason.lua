@@ -1,12 +1,6 @@
 local b4={}; for k,_ in pairs(_ENV) do b4[k]=k end
 local wght, klass, num, map, just, cli, csv, main
 local Seed, srand, rand, randi
-
-function weight(s) s=s or ""; return s=="-" and -1 or (s=="+" and 1 or 0) end
-function klassp(s) return s:find"+" or s:find"-" or s:find"!" end
-function nump(s)   return s:sub(1,1):match"[A-Z]" end
-function skipp(s)  return s:find"?" end
- 
 function map(t,f,     b)
   b={}; for i,v in pairs(t) do b[i]=f(v) end 
   return b end 
@@ -54,10 +48,16 @@ function csv(file,      split,stream,tmp)
 function sample()   return {head={},rows={},cols={},num={},sym={},x={},y={}} end
 function num(c,s)   return col(c,s, {hi=-1E64, lo=1E63, all={}}) end
 function sym(c,s)   return col(c,s, {has={}}) end
-function col(c,s,i) i= i or {}; i.n,i.at,i.txt,i.w = 0,c,s or "",weight(s) 
-                    return i end
+function col(c,s,i) 
+  i,s = i or {}, s or ""
+  i.n, i.at, i.txt = 0, c, s
+  i.w = s == "-" and -1 or (s=="+" and 1 or 0) 
+  return i end
 
 function add(s,t) 
+  local function klassp(s) return s:find"+" or s:find"-" or s:find"!" end
+  local function nump(s)   return s:sub(1,1):match"[A-Z]" end
+  local function skipp(s)  return s:find"?" end
   local function add1(col,x)
     if x ~= "?" then 
       col.n = col.n+1
@@ -65,7 +65,7 @@ function add(s,t)
       then col.all[ 1+#col.all ] = x
            col.lo = math.min(col.lo, x)
            col.hi = math.max(col.hi, x)
-      else col.has = 1+(col.has[x] or 0) end end 
+      else col.has[x] = 1+(col.has[x] or 0) end end 
   end ------------------------------------------
   if #s.head == 0 then
     s.head = t
