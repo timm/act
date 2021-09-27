@@ -45,45 +45,55 @@ function csv(file,      split,stream,tmp)
            return t end
     else io.close(stream) end end end
 
-function sample() return {head={},rows={},cols={},num={},sym={},x={},y={}} end
+function sampled() return {head={},rows={},cols={},nums={},syms={},x={},y={}} end
 function num(c,s) return col(c,s, {hi=-1E64, lo=1E63, all={}}) end
 function sym(c,s) return col(c,s, {has={}}) end
-function col(c,s,i) 
-  i,s = i or {}, s or ""
+function col(c,s,i,      last) 
+  i, s  = i or {}, s or ""
   i.n, i.at, i.txt = 0, c, s
-  i.w = s:sub(#s,#s) == "-" and -1 or (s:sub(#s,#s) == "+" and 1 or 0) 
+  last = s:sub(#s,#s)
+  i.w  = last == "-" and -1 or (last == "+" and 1 or 0) 
   return i end
 
-function add(s,t)
-  local function isGoal(s) return s:find"+" or s:find"-" or s:find"!" end
-  local function isNum(s)  return s:sub(1,1):match"[A-Z]" end
-  local function isSkip(s) return s:find"?" end
-  local function header(c,x,       new,here)
-    new = (isSkip(x) and col or (isNum(x) and num or sym))(c,x)
-    s.cols[ 1+#s.cols ] = new
-    if not isSkip(x) then
-      here = isNum(x)  and s.num or s.sym; here[ 1+#here ] = new
-      here = isGoal(x) and s.y   or s.x  ; here[ 1+#here ] = new end 
-  end ------------------------
-  local function update(col,x)
-    if x ~= "?" then 
-      col.n = col.n + 1
-      if   col.lo 
-      then col.all[ 1+#col.all ] = x
-           col.lo = math.min(col.lo, x)
-           col.hi = math.max(col.hi, x)
-      else col.has[x] = 1+(col.has[x] or 0) end end 
-  end --------------
-  if   #s.head == 0 
-  then s.head = t
-       for c,x in pairs(t) do header(c,x) end
-  else s.rows[ 1+#s.rows ] = t 
-       for c,x in pairs(t) do update(cols[c],x) end end end 
+function sample(i,row)
+  local function isGoal(s)    return s:find"+" or s:find"-" or s:find"!" end
+  local function isNum(s)     return s:sub(1,1):match"[A-Z]" end
+  local function isSkip(s)    return s:find"~" end
+  local function isMissing(s) return s=="?" end
+  local function createColumn(at,txt,       new,here)
+    new = (isSkip(txt) and col or (isNum(txt) and num or sym))(at,txt)
+    i.cols[ 1+#i.cols ] = new
+    if not isSkip(txt) then
+      here= isNum(txt)  and i.nums or i.syms; here[1+#here] = new
+      here= isGoal(txt) and i.y    or i.x   ; here[1+#here] = new end end 
+  local function ok(col,x)   
+     if not missing(x) then col.n = col.n+1; return true end end
+  local function updateSym(sym,x) 
+    if ok(sym,x) then sym.has[x] = 1+(sym.has[x] or 0) end end
+  local function updateNum(num,x) 
+    if ok(num,x) then 
+      num.all[ 1+#col.all ] = x
+      num.lo = math.min(num.lo, x)
+      num.hi = math.max(num.hi, x) end 
+  end ----- begin main --------------
+  if #i.head == 0 then
+    i.head = t
+    for at,txt in pairs(row) do createColumn(at,txt) end
+  else  
+    i.rows[ 1+#i.rows ] = row 
+    for _,col in pairs(i.nums) do updateNum(col, row[col.at]) end 
+    for _,col in pairs(i.syms) do updateSym(col, row[col.at]) end end end 
+
+function clone(i,inits) 
+  out = sampled()
+  sample(out , i.head) 
+  for _,row in paris(inits or {}) do sample(out,row) end
+  return out end
 
 function main(the, s)
   srand(the.seed)
-  s = sample()
-  for t in csv(the.data) do add(s,t) end end
+  s = sampled()
+  for t in csv(the.data) do sample(s,t) end end
 
 main{data = cli{d="../data/auto93.csv"},
      far  = cli{f=.9}, 
