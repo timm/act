@@ -54,30 +54,32 @@ function col(c,s,i)
   i.w = s == "-" and -1 or (s=="+" and 1 or 0) 
   return i end
 
-function add(s,t) 
-  local function klassp(s) return s:find"+" or s:find"-" or s:find"!" end
-  local function nump(s)   return s:sub(1,1):match"[A-Z]" end
-  local function skipp(s)  return s:find"?" end
-  local function add1(col,x)
+function add(s,t,        new,here)
+  local klassp, nump, skipp, add1, header
+  function klassp(s) return s:find"+" or s:find"-" or s:find"!" end
+  function nump(s)   return s:sub(1,1):match"[A-Z]" end
+  function skipp(s)  return s:find"?" end
+  function update(col,x)
     if x ~= "?" then 
-      col.n = col.n+1
+      col.n = col.n + 1
       if   col.lo 
       then col.all[ 1+#col.all ] = x
            col.lo = math.min(col.lo, x)
            col.hi = math.max(col.hi, x)
       else col.has[x] = 1+(col.has[x] or 0) end end 
   end ------------------------------------------
-  if #s.head == 0 then
-    s.head = t
-    for c,s in pairs(t) do 
-      new = (skipp(s) and col or (nump(s) and num or sym))(c,s)
-      s.cols[ 1+#s.cols ] = new
-      if not skipp(s) then
-        here= nump(s)  and s.num or s.sym; here[ 1+#here ] = new
-        here= goalp(s) and s.y   or s.x  ; here[ 1+#here ] = new
-  else    
-    s.rows[ 1+#s.rows ] = t 
-    for c,col in pairs(s.cols) do add1(col, t[c]) end end end end end
+  function header(c,s)
+    new = (skipp(s) and col or (nump(s) and num or sym))(c,s)
+    s.cols[ 1+#s.cols ] = new
+    if not skipp(s) then
+      here = nump(s)  and s.num or s.sym; here[ 1+#here ] = new
+      here = goalp(s) and s.y   or s.x  ; here[ 1+#here ] = new
+  end -----------------
+  if   #s.head == 0 
+  then s.head = t
+       for c,s in pairs(t) do header(c,s) end
+  else s.rows[ 1+#s.rows ] = t 
+       for c,col in pairs(s.cols) do update(col, t[c]) end end end end 
 
 function main(the, s)
   srand(the.seed)
