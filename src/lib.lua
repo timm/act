@@ -1,56 +1,50 @@
--- vim: filetype=lua ts=3 sw=3 sts=3  et :
+local b4={}; for k,_ in pairs(_ENV) do b4[k]=k end
+local order,fmt,str,obj, csv
+local rand={}
 
---  # Misc
+function order(t) table.sort(t); return t  end
 
-local lib={}
-local about=require("cli")
-local colors,rand,randi,rand,obj,Seed
+function fmt(...) return string.format(...) end
 
--- ## Strings
+function str(t,     u,ks)
+  ks={}; for k,v in pairs(t) do ks[1+#ks] = k end
+  u={};  for _,k in pairs(order(ks)) do 
+           u[1+#u]= #t>0 and tostring(t[k]) or fmt("%s=%s",k,t[k]) end
+  return "{"..table.concat(u,", ").."}" end
 
--- Pretty colors
-function color(s,...)
-   local all = {red=31, green=32, yellow=33, purple=34}
-   print('\27[1m\27['.. all[s] ..'m'..string.format(...)..'\27[0m') end
+function obj(self, new)
+  self.__tostring, self.__index=str,self
+  return setmetatable(new or {}, self) end
 
--- String from table (ignoring any "secret" slots, starting with "_").
-function show(t,    s,sep,keys)
-   s, sep, keys = (t.name or "").."{", "", {}
-   ignore = function (s) return type(s)=="string" and s:sub(1,1)=="_" end
-   for key,_ in pairs(t) do 
-      if not ignore(key) then keys[1+#keys]=key end end
-   table.sort(keys)
-   for _,key in pairs(keys) do s=s..sep..tostring(t[key]);sep=", " end
-   return s.."}"
-end
+function csv(file,      split,stream,tmp)
+  stream = file and io.input(file) or io.input()
+  tmp    = io.read()
+  return function(       t)
+    if tmp then
+      t,tmp = {},tmp:gsub("[\t\r ]*",""):gsub("#.*","")
+      for y in string.gmatch(tmp, "([^,]+)") do t[#t+1]=y end
+      tmp = io.read()
+      if  #t > 0 
+      then for j,x in pairs(t) do t[j] = tonumber(x) or x end
+           return t end
+    else io.close(stream) end end end
 
-function x(key,b4)
-   for n,z in pairs(arg) do
-      if key==z:sub(2,#k2) then
-         new = type(b4)=="boolean" and true or tonumber(arg[n+1]) or arg[n+1]
-         assert(type(new) == type(b4), "bad type for "..x)
-         return  new end end end
+local function top(t,n,     u)
+  u={}; for i=1,n do u[i]=t[i] end
+  return u end
 
--- ## Objects
-function obj(i, name, new)
-   new = setmetatable(new or {}, i)
-   i.__tostring = show 
-   i.__index    = i
-   i._name      = name
-   return new end
+local function shuffle(t,the,     j)
+  for i = #t, 2, -1 do
+    j = the.rand:int(1,i)
+    t[i], t[j] = t[j], t[i] end
+  return t end
 
--- ## Random numbers
+function rand:new(seed)   return obj(rand,{seed=seed or 10014})  end
+function rand:int(lo,hi); return math.floor(0.5 + self:next(lo,hi)) end
+function rand:next(lo,hi) 
+  lo, hi = lo or 0, hi or 1
+  self.seed = (16807 * self.seed) % 2147483647 
+  return lo + (hi-lo) * self.seed / 2147483647 end 
 
--- `srand` resets the random number seed;   
--- `randi,rand` generate random integers or floats
-Seed = 10014
-function srand(s) Seed= s or 10013 end
-function randi(lo,hi) return math.floor(0.5 + rand(lo,hi)) end
-function rand(lo,hi,     mult,mod)
-   lo,hi = lo or 0, hi or 1
-   mult, mod = 16807, 2147483647
-   Seed = (mult * Seed) % mod 
-   return lo + (hi-lo) * Seed / mod end 
-
-return {about=about, color=color, obj=obj,
-        rand=rand, randi=randi, srand=srand}
+for k,_ in pairs(_ENV) do if not b4[k] then print("?? "..k) end end
+return {shuffle=shuffle, order=order, fmt=fmt, str=str, obj=obj, csv=csv,rand=rand}

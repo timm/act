@@ -165,7 +165,7 @@ function map(t,f,     b)
 
 -- **obj(self:table, name:str, new:t) : table**     
 -- Return a new object of type `self` with print `name` with fields `t`.
-fsunction obj(self, name, new)
+function obj(self, name, new)
   self.__tostring = dump 
   self.__index    = self
   self._name      = name
