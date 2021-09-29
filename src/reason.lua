@@ -15,17 +15,16 @@ function col:new(c,s,i,      last)
   last = s:sub(#s,#s)
   i.w  = last == "-" and -1 or (last == "+" and 1 or 0) 
   return obj(col,i) end
-function col:add(x) if x ~="?" then self.n = self.n+1 end end
+function col:add(x) if x ~="?" then self.n = self.n+1 self:add1(x) end end
 
 function num:new(c,s)  
-  return obj(num, col:new(c,s, {hi=-1E64, lo=1E63, some=some:new()})) end
-function num:add(x)
+  return obj(num, with(col:new(c,s), {hi=-1E64, lo=1E63, some=some:new()})) end
+function num:add1(x)
   if x ~="?"  then
     self.n = self.n + 1
     self.some:add(x)
     if x < self.lo then self.lo = x end
-    if x > self.hi then self.hi = x end end 
-  return self end
+    if x > self.hi then self.hi = x end end  end
 function num:norm(x,      lo,hi) 
   lo,hi=self.lo,self.hi
   return math.abs(lo-hi) < 1E-32 and 0 or (x-lo)/(hi-lo) end
@@ -38,13 +37,12 @@ function num:dist(x,y)
 -- ## Sym
 
 -- Create a symbol counter named `name` at column `at`.
-function sym:new(at,name) return obj(sym, col:new(at,name, {has={}})) end
+function sym:new(at,name) return obj(sym, with(col:new(at,name), {has={}})) end
 -- Update symbol counts
-function sym:add(x)
+function sym:add1(x)
   if x~="?" then 
     self.n = self.n+1
-    self.has[x]=1+(self.has[x] or 0) end 
-  return self end
+    self.has[x]=1+(self.has[x] or 0) end  end
 -- Two symbols are zero/one distance apart if they are the  same/different
 function sym:dist(x,y) return x==y and 0 or 1 end
 
@@ -52,11 +50,12 @@ function sym:dist(x,y) return x==y and 0 or 1 end
 
 -- A place to hold `all` columns or just the indep/dep `x`,`y` columns.
 function cols:new() return obj(cols,{all={},x={},y={}}) end
--- Update the counters
-function cols:add(a) for _,c in pairs(self.all) do c:add(a[c.at]) end end
+-- Update the counters; return the row
+function cols:add(row) 
+  for _,c in pairs(self.all) do c:add(row[c.at]) end;return row end
 -- Initialize the columns  from a list of column names. Names
 -- may contain funny symbols (see `isGoal``, `isNum`, `isIgnorable`)
-function cols:complete(names,       new,here,what)
+function cols:names2Columns(names,       new,here,what)
   local function isGoal(s)      return s:find"+" or s:find"-" or s:find"!" end
   local function isNum(s)       return s:sub(1,1):match"[A-Z]" end
   local function isIgnorable(s) return s:find"~" end
@@ -73,9 +72,8 @@ function sample:new(the)
 function sample:add(row)
   if   #self.head==0 
   then self.head = row
-       self.cols = cols:new():complete(row) 
-  else self.rows[1+#self.rows] = row 
-       self.cols:add(row) end end
+       self.cols = cols:new():names2Columns(row) 
+  else self.rows[1+#self.rows] = self.cols:add(row) end end
 
 local function dist(s,r1,r2,cols,the,     d,n,inc)
   d,n = 0,1E-32

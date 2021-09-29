@@ -2,6 +2,8 @@ local b4={}; for k,_ in pairs(_ENV) do b4[k]=k end
 local order,fmt,str,obj, csv
 local rand={}
 
+function with(t1,t2) for k,v in pairs(t2) do t1[k]=v end; return t1; end 
+
 function order(t) table.sort(t); return t  end
 
 function fmt(...) return string.format(...) end
@@ -12,7 +14,10 @@ function str(t,     u,ks)
            u[1+#u]= #t>0 and tostring(t[k]) or fmt("%s=%s",k,t[k]) end
   return "{"..table.concat(u,", ").."}" end
 
-function obj(self, new)
+function obj(self,    new,super)
+  new = new or {}
+  super = getmetatable(new)
+  if super then setmetatable(self, super) end
   self.__tostring, self.__index=str,self
   return setmetatable(new or {}, self) end
 
