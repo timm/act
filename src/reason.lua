@@ -35,29 +35,37 @@ function num:dist(x,y)
   else   x,y = self:norm(x), self:norm(y) end
   return math.abs(x-y) end 
 
-function sym:new(c,s) return obj(sym, col:new(c,s, {has={}})) end
+-- ## Sym
+
+-- Create a symbol counter named `name` at column `at`.
+function sym:new(at,name) return obj(sym, col:new(at,name, {has={}})) end
+-- Update symbol counts
 function sym:add(x)
   if x~="?" then 
     self.n = self.n+1
     self.has[x]=1+(self.has[x] or 0) end 
   return self end
+-- Two symbols are zero/one distance apart if they are the  same/different
 function sym:dist(x,y) return x==y and 0 or 1 end
 
-function cols:new() return obj(cols,{all={},x={},y={}}) end
-function cols:add(row,rows) 
-  rows[1+#rows] = row
-  for _,col in pairs(self.all) do col:add( row[col.at] ) end end
+-- ## Cols
 
-function cols:complete(t,       new,here,what)
-  local function isGoal(s) return s:find"+" or s:find"-" or s:find"!" end
-  local function isNum(s)  return s:sub(1,1):match"[A-Z]" end
-  for at,txt in pairs(t) do 
-    what = txt:find"-" and col or (isNum(txt) and num or sym)
-    new  = what:new(at,txt)
-    self.all[ 1+#self.all ] = new
-    if not txt:find"~" then
-      here = isGoal(txt) and self.y or self.x
-      here[1+#here] = new end end
+-- A place to hold `all` columns or just the indep/dep `x`,`y` columns.
+function cols:new() return obj(cols,{all={},x={},y={}}) end
+-- Update the counters
+function cols:add(a) for _,c in pairs(self.all) do c:add(a[c.at]) end end
+-- Initialize the columns  from a list of column names. Names
+-- may contain funny symbols (see `isGoal``, `isNum`, `isIgnorable`)
+function cols:complete(names,       new,here,what)
+  local function isGoal(s)      return s:find"+" or s:find"-" or s:find"!" end
+  local function isNum(s)       return s:sub(1,1):match"[A-Z]" end
+  local function isIgnorable(s) return s:find"~" end
+  for at,name in pairs(names) do 
+    what = isIgnorable(name) and col or (isNum(name) and num or sym)
+    new  = what:new(at,name)      -- create the right kind of column
+    self.all[ 1+#self.all ] = new -- store it
+    if not isIgnorable(name) then -- also store it in one  of "x" or "y"
+      table.insert(isGoal(name) and self.y or self.x, new) end end
   return self end
 
 function sample:new(the) 
@@ -66,7 +74,8 @@ function sample:add(row)
   if   #self.head==0 
   then self.head = row
        self.cols = cols:new():complete(row) 
-  else self.cols:add(row, self.rows) end end
+  else self.rows[1+#self.rows] = row 
+       self.cols:add(row) end end
 
 local function dist(s,r1,r2,cols,the,     d,n,inc)
   d,n = 0,1E-32
