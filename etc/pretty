@@ -1,0 +1,10 @@
+BEGIN{
+header="" \
+"-- (c)2021, Tim Menzies timm@ieee.org, unlicense.org        \n"  \
+"-- [home](index) :: [discuss](discuss) ::  [tests](tests)     \n" \
+"-- ------------------------------------------------------      \n" }
+
+NR==1{title=$0}
+/^[ \t]*$/ { print title
+             print header
+             while(getline) print $0 }

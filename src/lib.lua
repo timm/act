@@ -1,13 +1,9 @@
 -- # Misc lib stuff
--- (c)2021, Tim Menzies timm@ieee.org, unlicense.org     
--- [home](index) :: [discuss](discuss) ::  [tests](tests)  
--- -----
-
 
 --  ## String Stuff
 
 -- Formatting strings
-function fmt(...) return string.format(...) end
+local function fmt(...) return string.format(...) end
 
 -- **showr(t:tbl) :str**     
 -- Return table as string. Print table in sorted keys
@@ -31,14 +27,12 @@ local function klass(s,up,   k)
   k= setmetatable({_name=is, __tostring=show}, up) 
   k.__index = k
   return k end
-
 -- **isa(klass:tbl, ?new:tbl, ?also:tbl):tbl**    
 -- Delegate calls to `new` to `klass`. If `also` exists, add those slots.
 local function isa(self,    new,also, super)
   new = setmetatable(new or {},self)
   for k,v in pairs(also or {}) do new[k]=v end
   return new end
-
 -- **Obj:new():Obt**  
 local Obj=klass("Obj")
 function Obj:new() return isa(Obj) end
@@ -47,12 +41,10 @@ function Obj:new() return isa(Obj) end
 
 -- Sorting lists.
 local function order(t) table.sort(t); return t  end
-
 -- First few items ina  list
 local function top(t,n,     u)
   u={}; for i=1,n do u[i]=t[i] end
   return u end
-
 -- Randomizing order or list
 local function shuffle(t,the,     j)
   for i = #t, 2, -1 do
@@ -90,5 +82,7 @@ function rand:next(lo,hi)
   self.seed = (16807 * self.seed) % 2147483647 
   return lo + (hi-lo) * self.seed / 2147483647 end 
 
+-- -------
+-- Returns:
 return {show=show, klass=klass, isa=isa, order=order,
         top=top, shuffle=shuffle, Rand=Rand}

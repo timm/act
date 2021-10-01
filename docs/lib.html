@@ -22,7 +22,7 @@
                 <a class="ss" href="#section-1">&#x00a7;</a>
               </div>
               <h1 id="misc-lib-stuff">Misc lib stuff</h1>
-<p>(c)2021, Tim Menzies <a href="mailto:&#x74;&#x69;&#109;&#x6d;&#64;&#x69;&#101;&#101;&#x65;&#46;&#x6f;&#x72;&#x67;">&#x74;&#x69;&#109;&#x6d;&#64;&#x69;&#101;&#101;&#x65;&#46;&#x6f;&#x72;&#x67;</a>, unlicense.org<br><a href="index">home</a> :: <a href="discuss">discuss</a> ::  <a href="tests">tests</a>  </p>
+<p>(c)2021, Tim Menzies <a href="mailto:&#x74;&#105;&#109;&#x6d;&#x40;&#105;&#x65;&#x65;&#101;&#46;&#111;&#x72;&#x67;">&#x74;&#105;&#109;&#x6d;&#x40;&#105;&#x65;&#x65;&#101;&#46;&#111;&#x72;&#x67;</a>, unlicense.org<br><a href="index">home</a> :: <a href="discuss">discuss</a> ::  <a href="tests">tests</a>  </p>
 <hr>
 
             </div>
@@ -65,7 +65,7 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fmt</span><span class="hljs-params">(...)</span></span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">string</span>.<span class="hljs-built_in">format</span>(...) <span class="hljs-keyword">end</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">local</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fmt</span><span class="hljs-params">(...)</span></span> <span class="hljs-keyword">return</span> <span class="hljs-built_in">string</span>.<span class="hljs-built_in">format</span>(...) <span class="hljs-keyword">end</span></pre></div></div>
             
         </li>
         
@@ -119,9 +119,9 @@ show the keys.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">local</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">klass</span><span class="hljs-params">(s,up,   k)</span></span> 
-  k = {_name=is, <span class="hljs-built_in">__tostring</span>=show}; 
+  k= <span class="hljs-built_in">setmetatable</span>({_name=is, <span class="hljs-built_in">__tostring</span>=show}, up) 
   k.<span class="hljs-built_in">__index</span> = k
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">setmetatable</span>(k,up) <span class="hljs-keyword">end</span></pre></div></div>
+  <span class="hljs-keyword">return</span> k <span class="hljs-keyword">end</span></pre></div></div>
             
         </li>
         
@@ -322,9 +322,35 @@ show the keys.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">rand:next</span><span class="hljs-params">(lo,hi)</span></span> 
   lo, hi = lo <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>, hi <span class="hljs-keyword">or</span> <span class="hljs-number">1</span>
   <span class="hljs-built_in">self</span>.seed = (<span class="hljs-number">16807</span> * <span class="hljs-built_in">self</span>.seed) % <span class="hljs-number">2147483647</span> 
-  <span class="hljs-keyword">return</span> lo + (hi-lo) * <span class="hljs-built_in">self</span>.seed / <span class="hljs-number">2147483647</span> <span class="hljs-keyword">end</span> 
+  <span class="hljs-keyword">return</span> lo + (hi-lo) * <span class="hljs-built_in">self</span>.seed / <span class="hljs-number">2147483647</span> <span class="hljs-keyword">end</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-20">&#x00a7;</a>
+              </div>
+              <hr>
 
-<span class="hljs-keyword">return</span> {show=show, klass=klass, isa=isa, order=order,
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-21">&#x00a7;</a>
+              </div>
+              <p>Returns:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">return</span> {show=show, klass=klass, isa=isa, order=order,
         top=top, shuffle=shuffle, Rand=Rand}</pre></div></div>
             
         </li>
