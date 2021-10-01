@@ -1,6 +1,8 @@
--- Misc LUA functions   
--- (c)2021, Tim Menzies timm@ieee.org, unlicense.org  
--- ----------------------------------------------------
+-- # Misc lib stuff
+-- (c)2021, Tim Menzies timm@ieee.org, unlicense.org     
+-- [home](index) :: [discuss](discuss) ::  [tests](tests)  
+-- -----
+
 
 --  ## String Stuff
 
@@ -26,15 +28,16 @@ local function show(t,     u,mt,pre,ks)
 -- **klass(name:str):tbl**   
 -- Create a constructor `klass()` (and store a print `name`).
 local function klass(s,up,   k) 
-  k = {_name=is, __tostring=show}; return setmetatable(k,up) end
+  k= setmetatable({_name=is, __tostring=show}, up) 
+  k.__index = k
+  return k end
 
 -- **isa(klass:tbl, ?new:tbl, ?also:tbl):tbl**    
 -- Delegate calls to `new` to `klass`. If `also` exists, add those slots.
 local function isa(self,    new,also, super)
-  new = new or {}
-  self.__index = self
+  new = setmetatable(new or {},self)
   for k,v in pairs(also or {}) do new[k]=v end
-  return setmetatable(new, self) end
+  return new end
 
 -- **Obj:new():Obt**  
 local Obj=klass("Obj")
