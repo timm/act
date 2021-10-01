@@ -24,13 +24,16 @@ function isa(self,    new,also, super)
   for k,v in pairs(also or {}) do new[k]=v end
   return setmetatable(new, self) end
 
--- ## Obj()
+-- ## Classes
 
--- Base class.
+-- ### Base
+
+-- **Obj:new():Obt**  
 local Obj=klass("Obj")
 function Obj:new() return isa(Obj) end
 
--- **some:new(?max=256):some**   
+-- **Some:new(?max=256):Some**   
+
 -- Reservoir sampler (of upper size of `max`).
 -- If we fill up, delete anything at random.
 -- If we ask for `all` those values, then ensure them come back sorted.
@@ -47,7 +50,7 @@ function Some:add(x)
 function Some:all()  
   if self.bad then table.sort(self.has) end; self.bad=false; return self.has end
 
--- ## Col():Col
+-- ### Col():Col
 
 -- Abstract class for columns. Allows one or more items to be added via `add` or `adds`.
 local Col=klass("Col",Obj)
@@ -60,7 +63,7 @@ function Col:adds(t)
 function Col:add(x) 
   if x~="?" then self.n=1+self.n; self:add1(x) end; return self end
 
--- ## Num(?n:int, ?s:str):Num
+-- ### Num(?n:int, ?s:str):Num
 
 -- Counter for numbers at column `n`, named `s`.    
 -- **:add(x)** updates the symbol counts.   
@@ -82,7 +85,7 @@ function Num:add1(x,    d)
   if x < self.lo then self.lo = x end
   if x > self.hi then self.hi = x end end
 
--- ## Sym(?n:int, ?s:str):Sym
+-- ### Sym(?n:int, ?s:str):Sym
 
 -- Counter for symbols at column `n`, named `s`.   
 -- **:add(x)** updates the symbol counts.   
@@ -101,6 +104,7 @@ function Sym:add1(x,    d)
   if self.has[x] > self. most then self.most,self.mode=self.has[x], x end end
 
 -- ---------------------------------------
+-- ## Start up
 n=Some:new():adds{"a","a","a","b","b"}
 s=Sym:new(22,"fred"):adds{"a","a","a","b","b"}
 c=Num:new(1,"asdas-"):adds{22,32,41,100,1}
