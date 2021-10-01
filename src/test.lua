@@ -13,9 +13,9 @@ function show(t,     u,mt,pre)
 
 -- **klass(name:str):tbl**   
 -- Create a constructor `klass()` (and store a print `name`).
-function klass(name,super,   k) 
-  k = {_name=name, __tostring=show}
-  return setmetatable(k,super) end
+function klass(s,up,   k) 
+  k = {_name=is, __tostring=show}; return setmetatable(k,up) end
+
 -- **isa(klass:tbl, ?new:tbl, ?also:tbl):tbl**    
 -- Delegate calls to `new` to `klass`. If `also` exists, add those slots.
 function isa(self,    new,also, super)
@@ -25,28 +25,30 @@ function isa(self,    new,also, super)
   return setmetatable(new, self) end
 
 -- ## Classes
-
 -- ### Base
 
 -- **Obj:new():Obt**  
 local Obj=klass("Obj")
+
 function Obj:new() return isa(Obj) end
 
--- **Some:new(?max=256):Some**   
-
+--- **Some:new(?max=256):Some**   
 -- Reservoir sampler (of upper size of `max`).
 -- If we fill up, delete anything at random.
 -- If we ask for `all` those values, then ensure them come back sorted.
 local Some=klass("Some",Obj)
+
 function Some:new(max) 
   return isa(self,Obj:new(),{max=max or 256,bad=false,has={}}) end
-function Some:adds(t) 
-  for _,x in pairs(t) do self:add(x) end; return self end
+
+function Some:adds(t) for _,x in pairs(t) do self:add(x) end; return self end
+
 function Some:add(x)
   r = math.random
   if #self.has < self.max then pos = 1+#self.has 
   elseif r() < self.max/self.n then pos = 1+(r()*#self.has)//1 end 
   if pos then self.bad=true; self.has[pos]=x end end
+
 function Some:all()  
   if self.bad then table.sort(self.has) end; self.bad=false; return self.has end
 
@@ -54,28 +56,32 @@ function Some:all()
 
 -- Abstract class for columns. Allows one or more items to be added via `add` or `adds`.
 local Col=klass("Col",Obj)
+
 function Col:new(c,s) 
   s = s or "" 
   return isa(self, Obj:new(),{at= c or 1, name=s, n=0,
                               w=(s:find"+" and 1 or (s:find"-" and -1 or 0))}) end 
-function Col:adds(t) 
-  for _,x in pairs(t) do self:add(x) end; return self end
+
+function Col:adds(t) for _,x in pairs(t) do self:add(x) end; return self end
+
 function Col:add(x) 
   if x~="?" then self.n=1+self.n; self:add1(x) end; return self end
 
--- ### Num(?n:int, ?s:str):Num
+--- ### Num(?n:int, ?s:str):Num
 
 -- Counter for numbers at column `n`, named `s`.    
 -- **:add(x)** updates the symbol counts.   
 -- **:mid()** returns central tendency.     
 -- **:var()** returns standard deviation.
 local Num=klass("Num",Col)
+
 function Num:new(n,s) 
   return isa(self, Col:new(n,s),{some=Some:new(),mu=0,m2=0,sd=0,lo=1E32,hi=-1E32}) end
-function Num:mid() 
-  return self.mu end
-function Num:var() 
-  return self.sd end
+
+function Num:mid() return self.mu end
+
+function Num:var() return self.sd end
+
 function Num:add1(x,    d)
   self.some:add(x)
   d       = x - self.mu
@@ -94,11 +100,13 @@ function Num:add1(x,    d)
 local Sym=klass("Sym",Col)
 function Sym:new(n,s) 
   return isa(self,Col:new(n,s),{most=0,mode="?",has={}}) end 
-function Sym:mid() 
-  return self.mode end
+
+function Sym:mid() return self.mode end
+
 function Sym:var(  e) 
   e=0; for _,v in pairs(self.has) do e=e - v/self.n * math.log(v/self.n,2) end
   return e end
+
 function Sym:add1(x,    d)
   self.has[x] = 1 + (self.has[x] or 0)
   if self.has[x] > self. most then self.most,self.mode=self.has[x], x end end

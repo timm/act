@@ -70,11 +70,11 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
   font-family: "roboto-black";
   xtext-transform: uppercase;
-  margin: 30px 0 15px 0;
+  xmargin: 5px 0 15px 0;
 }
 
 h1 {
-  margin-top: 11px;
+  margin-top: 10px;
 }
 h2 {
   font-size: 1.26em;
@@ -84,7 +84,7 @@ hr {
   border: 0;
   background: 1px #ddd;
   height: 1px;
-  margin: 20px 0;
+  margin: 10px 0;
 }
 
 pre, tt, code {
