@@ -42,20 +42,12 @@ alias vi="vim -u $here/etc/vimrc "
 alias vims="vim +PluginInstall +qall"         
 alias pdoc="$HOME/Library/Python/3.8/bin/pdoc"
 
-
-doc1() { _doc /Library/Frameworks/Python.framework/Versions/3.9/bin/pdoc; }
-doc2() { _doc /usr/local/bin/pdoc; }
-
-_doc() {
-  pdoc=$1 
-  (cd $here
-  logo="https://github.com/timm/$what/raw/main/etc/img/logo.png"
-  foot="$what v0.1 (c) 2021 Tim Menzies, unlicense.org. Share and enjoy."
-  url="http://github.com/timm/$what/blob/main/$what"
-  $pdoc -e $what=$url  --no-search --logo $logo --footer-text "$foot" -o $here $what.py
-  mv $here/$what.html $here/index.html
-  $pdoc -e $what=$url  --no-search --logo $logo --footer-text "$foot"          $what.py)
+doc() {
+  mkdir -p $here/docs
+  docco -o $here/docs $*
+  cp $here/etc/docco.css $here/docs
 }
+
 here() { cd $1; basename `pwd`; }
 
 PROMPT_COMMAND='echo -ne "🌱 $(git branch 2>/dev/null | grep '^*' | colrm 1 2):";PS1="$(here ..)/$(here .):\!\e[m ▶ "'
