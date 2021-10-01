@@ -32,7 +32,7 @@ local Obj=klass("Obj")
 
 function Obj:new() return isa(Obj) end
 
---- **Some:new(?max=256):Some**   
+-- **Some:new(?max=256):Some**   
 -- Reservoir sampler (of upper size of `max`).
 -- If we fill up, delete anything at random.
 -- If we ask for `all` those values, then ensure them come back sorted.
