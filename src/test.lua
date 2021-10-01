@@ -13,28 +13,28 @@ function show(t,     u,mt,pre)
 
 -- **klass(name:str):tbl**   
 -- Create a constructor `klass()` (and store a print `name`).
-function klass(name,   k) 
-  return {_name=name,__tostring=show} end
+function klass(name,super,   k) 
+  k = {_name=name, __tostring=show}
+  return setmetatable(k,super) end
 -- **isa(klass:tbl, ?new:tbl, ?also:tbl):tbl**    
 -- Delegate calls to `new` to `klass`. If `also` exists, add those slots.
 function isa(self,    new,also, super)
-  new   = new or {}
+  new = new or {}
   self.__index = self
   for k,v in pairs(also or {}) do new[k]=v end
-  if getmetatable(new) then setmetatable(self, getmetatable(new)) end
   return setmetatable(new, self) end
 
 -- ## Obj()
 
 -- Base class.
-local Obj=klass"Obj"
+local Obj=klass("Obj")
 function Obj:new() return isa(Obj) end
 
 -- **some:new(?max=256):some**   
 -- Reservoir sampler (of upper size of `max`).
 -- If we fill up, delete anything at random.
 -- If we ask for `all` those values, then ensure them come back sorted.
-local Some=klass"Some"
+local Some=klass("Some",Obj)
 function Some:new(max) 
   return isa(self,Obj:new(),{max=max or 256,bad=false,has={}}) end
 function Some:adds(t) 
@@ -50,11 +50,11 @@ function Some:all()
 -- ## Col():Col
 
 -- Abstract class for columns. Allows one or more items to be added via `add` or `adds`.
-local Col=klass"Col"
+local Col=klass("Col",Obj)
 function Col:new(c,s) 
   s = s or "" 
   return isa(self, Obj:new(),{at= c or 1, name=s, n=0,
-                          w = (s:find"+" and 1 or (s:find"-" and -1 or 0))}) end 
+                              w=(s:find"+" and 1 or (s:find"-" and -1 or 0))}) end 
 function Col:adds(t) 
   for _,x in pairs(t) do self:add(x) end; return self end
 function Col:add(x) 
@@ -66,7 +66,7 @@ function Col:add(x)
 -- **:add(x)** updates the symbol counts.   
 -- **:mid()** returns central tendency.     
 -- **:var()** returns standard deviation.
-local Num=klass"Num"
+local Num=klass("Num",Col)
 function Num:new(n,s) 
   return isa(self, Col:new(n,s),{some=Some:new(),mu=0,m2=0,sd=0,lo=1E32,hi=-1E32}) end
 function Num:mid() 
@@ -88,7 +88,7 @@ function Num:add1(x,    d)
 -- **:add(x)** updates the symbol counts.   
 -- **:mid()** returns central tendency.     
 -- **:var()** returns entropy.
-local Sym=klass"Sym"
+local Sym=klass("Sym",Col)
 function Sym:new(n,s) 
   return isa(self,Col:new(n,s),{most=0,mode="?",has={}}) end 
 function Sym:mid() 
@@ -108,4 +108,5 @@ c=Num:new(1,"asdas-"):adds{22,32,41,100,1}
 print(c)
 print(n)
 print(s)
+print(Some:new(22,"as"))
 print(show{200,10,10000})
