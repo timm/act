@@ -1,10 +1,12 @@
-n=Some:new():adds{"a","a","a","b","b"}
-s=Sym:new(22,"fred"):adds{"a","a","a","b","b"}
-c=Num:new(1,"asdas-"):adds{22,32,41,100,1}
+local lib=require"lib"
+local fmt,show,with,shuffle = lib.fmt,lib.show,lib.with,lib.shuffle
+local srand = lib.srand
 
-print(c)
-print(n)
-print(s)
-print(Some:new(22,"as"))
-print(show{200,10,10000})
+assert("[k]=[1]" == fmt("[%s]=[%s]","k",1))
+assert("(age=20, name=tim)" == show{name="tim", age=20})
 
+local t = with({a=1,b=2}, {b=3,c=4})
+assert(t.a==1 and t.b==3 and t.c==4)
+
+srand(1)
+print(show(shuffle{10,1,3,100,10}))
