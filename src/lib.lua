@@ -19,6 +19,12 @@ local function show(t,     u,mt,pre,ks)
   pre = (getmetatable(t) or {})._name or ""
   return pre.. "("..table.concat(u,", ")..")" end
 
+-- **color(col:str, fmt:str, [arg:str]+)**     
+-- Print formatted string, in  color `col`.
+local function color(s,...)
+  local all = {red=31, green=32, yellow=33, purple=34}
+    print('\27[1m\27['.. all[s] ..'m'..fmt(...)..'\27[0m') end
+
 -- ## OO Stuff
 
 -- **klass(name:str):tbl**   
@@ -70,19 +76,23 @@ function csv(file,      split,stream,tmp)
 
 -- ## Random Stuff
 
-local Rand={}
+local Rand,Seed={},10014
 
--- Random seeds.
-function rand:new(seed)   return obj(rand,{seed=seed or 10014})  end
--- Random integers
-function rand:int(lo,hi); return math.floor(0.5 + self:next(lo,hi)) end
--- Random floats
-function rand:next(lo,hi) 
+-- **srand(seed:int)**    
+-- Set random  number seed.
+function srand(seed) Seed=seed or Seed end
+--  **randi(lo:num, hi:num):num**  
+-- Return a random integer from `lo` to ` hi`.
+function randi(lo,hi); return math.floor(0.5 + rand(lo,hi)) end
+--  **rand(?lo:num=0, ?hi:num=1):num**    
+-- Return a random integer from `lo` to ` hi`.
+function rand(lo,hi) 
   lo, hi = lo or 0, hi or 1
-  self.seed = (16807 * self.seed) % 2147483647 
-  return lo + (hi-lo) * self.seed / 2147483647 end 
+  Seed = (16807 * Seed) % 2147483647 
+  return lo + (hi-lo) * Seed / 2147483647 end 
 
 -- -------
 -- Returns:
-return {show=show, klass=klass, isa=isa, order=order,
-        top=top, shuffle=shuffle, Rand=Rand}
+return {show=show, klass=klass, isa=isa, order=order, top=top,
+        color=color,
+        shuffle=shuffle, srand=srand, randi=randi, rand=rand}
