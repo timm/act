@@ -9,37 +9,6 @@ function show(t,     u,mt,pre)
   pre = (getmetatable(t) or {})._name or ""
   return pre.. "("..table.concat(u,", ")..")" end
 
--- ## OO Stuff
-
--- **klass(name:str):tbl**   
--- Create a constructor `klass()` (and store a print `name`).
-function klass(s,up,   k) 
-  k = {_name=is, __tostring=show}; return setmetatable(k,up) end
-
--- **isa(klass:tbl, ?new:tbl, ?also:tbl):tbl**    
--- Delegate calls to `new` to `klass`. If `also` exists, add those slots.
-function isa(self,    new,also, super)
-  new = new or {}
-  self.__index = self
-  for k,v in pairs(also or {}) do new[k]=v end
-  return setmetatable(new, self) end
-
--- ## Classes
--- ### Base
-
--- **Obj:new():Obt**  
-local Obj=klass("Obj")
-
-function Obj:new() return isa(Obj) end
-
--- **Some:new(?max=256):Some**   
--- Reservoir sampler (of upper size of `max`).
--- If we fill up, delete anything at random.
--- If we ask for `all` those values, then ensure them come back sorted.
-local Some=klass("Some",Obj)
-
-function Some:new(max) 
-  return isa(self,Obj:new(),{max=max or 256,bad=false,has={}}) end
 
 function Some:adds(t) for _,x in pairs(t) do self:add(x) end; return self end
 
