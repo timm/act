@@ -16,8 +16,8 @@ function Num.dist(i,x,y)
 function Sample.gap(i,row1,row2,cols,the)
   d, n, p = 0, 1E-32,  the.p or 2
   for col in  pairs(cols or i.x) do
+    n  = n+1 end
     inc= dist(col, row1[col.at], row2[col.at])
     d  = d + inc^p
-    n  = n+1 end
   return (d/n)^(1/p) end
 
