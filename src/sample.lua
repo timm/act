@@ -4,7 +4,7 @@ require"tricks"
 -- Polymorphism
 function add(i,x) 
   if x ~= "?" then
-    i.n = i.n+1
+    i.n = i.n + 1
     return i.Is.add(i,x) end end
 function mid(i)    return i.Is.mid(i) end 
 function spread(i) return i.Is.spread(i) end 
@@ -12,28 +12,25 @@ function spread(i) return i.Is.spread(i) end
 -- Reservoir sampler (of upper size of `max`). When full, delete anything at random.
 Some={}
 function Some.new(max) 
-  return {Is=Some,n=0,max=max or 256,old=false,has={}} end
+  return {Is=Some, n=0, max=max or 256, old=true, Has={}} end
 
 function Some.add(i,x) 
   r = math.random
-  if     #i.has < i.max     then pos = 1+#i.has 
-  elseif r()    < i.max/i.n then pos = 1+(r()*#i.has)//1 end 
+  if     #i.Has < i.max     then pos = 1+#i.Has 
+  elseif r()    < i.max/i.n then pos = 1+(r()*#i.Has)//1 end 
   if pos then 
     i.old=true
-    i.has[pos]=x end end
+    i.Has[pos]=x end end
 
 function has(i)  
-  i.old = i.old and order(i.has) or i.has; i.old=false; return i.has end
+  i.old= i.old and order(i.Has) or i.Has; i.old=false; return i.Has end
 
-function per(i,p) 
-  a = a or has(i)
-  p = p or 0.5
-  return a[ p*#a // 1 ] end
+function per(i,p) a= a or has(i); return a[ ((p or .5)*#a) // 1 ] end
 
 -- Abstract class for columns.
 Col={}
-function Col.new(at,name) 
-  local function w(s) return s:find"+" and 1 or (s:find"-" and -1 or 0) end
+function Col.new(at,name,    w) 
+  function w(s) return s:find"+" and 1 or (s:find"-" and -1 or 0) end
   return {Is=Col, at=at or 1, name=name or "", n=0, w = w(name or "")} end
 
 function Col.add(i,x) return x end
@@ -41,7 +38,7 @@ function Col.add(i,x) return x end
 -- counter for symbols
 Sym={}
 function Sym.new(at, name)  
-  return with(Col.new(at,name), {Is=Sym,has={}, mode=0,_most=0}) end
+  return with(Col.new(at,name), {Is=Sym, has={}, mode="", most=0}) end
 
 function Sym.add(i,x) 
   i.has[x] = 1 + (i.has[x] or 0)
@@ -55,8 +52,8 @@ function Sym.spread(i,   e)
 
 -- counter for numbers
 Num={}
-function Num.new(at,txt) 
-  return with(Col.new(at,name), {Is=Num,some=Some.new(), o=-1E32,hi=1E32}) end
+function Num.new(at,name) 
+  return with(Col.new(at,name), {Is=Num,some=Some.new(), lo=1E32, hi=-1E32}) end
 
 function Num.add(i,x)
   add(i.some, x)
@@ -73,8 +70,8 @@ function Sample.new(inits,       i)
   for _,row in pairs(inits or {}) do add(i,row) end  
   return i end
  
-function Sample.add(i,t) 
-  local function names2Column(   what,new,tmp)
+function row(i,t) 
+  local function names2Column(      what,new,tmp)
     i.names = t
     for at,name in pairs(t)  do
       what = name:find"~" and Col or (name:match("^[A-Z]") and Num or Sym)
@@ -97,7 +94,7 @@ function Sample.mid(i)
 function Sample.spread(i) 
   t={}; for _,c in pairs(i.cols) do t[1+#t]=spread(c) end; return t end
 
-function load(i,file) for row in csv(file) do add(i,row) end; return i end
+function fromFile(i,file) for t in csv(file) do row(i,t) end; return i end
 
 function clone(i, inits,     i)
    i = Sample.new()

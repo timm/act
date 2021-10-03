@@ -53,16 +53,21 @@ function fmt(...) return string.format(...) end
 -- table to string
 function show(t,     s,u,mt,pre,ks)
   if type(t) ~= "table" then return tostring(t) end
-  local function public(x) return not x:match("^[A-Z]") end
+  local function keys(t)
+    for k,_ in  pairs(t) do return type(k)=="string" end end
+  local function public(x) 
+    if type(x)~="string" then return true end
+    return not x:match("^[A-Z]") end
   u,ks = {},{}
-  if   #t==0
-  then for k,_ in pairs(t) do if public(k) then ks[1+#ks]=k end end
-  else for k,_ in pairs(t) do                   ks[1+#ks]=k end
-  end
+  keyed = keys(t)
+  for k,_ in pairs(t) do if public(k) then ks[1+#ks]=k end  end
   for _,k in pairs(order(ks)) do 
-    s = show(t[k])
-    u[1+#u] = #t>0 and s or k.."="..s end 
+    v = t[k]
+    u[1+#u] = (keyed and k.."=" or "")..show(v) end 
   return "("..table.concat(u,", ")..")" end
+
+-- print table to string
+function shop(t) print(show(t)) end
 
 -- Color a string
 function color(s,...)
