@@ -40,6 +40,11 @@
                 </a>
               
                 
+                <a class="source" href="maths.html">
+                  maths.lua
+                </a>
+              
+                
                 <a class="source" href="old.html">
                   old.lua
                 </a>
@@ -266,7 +271,7 @@
             </div>
             
             <div class="content"><div class='highlight'><pre>Col={}
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Col.new</span><span class="hljs-params">(at,name)</span></span> <span class="hljs-keyword">return</span> {Is= Col, at=at <span class="hljs-keyword">or</span> <span class="hljs-number">1</span>, name=name <span class="hljs-keyword">or</span> <span class="hljs-string">&quot;&quot;</span>, n=<span class="hljs-number">0</span>}</pre></div></div>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Col.new</span><span class="hljs-params">(at,name)</span></span> <span class="hljs-keyword">return</span> {Is=Col, at=at <span class="hljs-keyword">or</span> <span class="hljs-number">1</span>, name=name <span class="hljs-keyword">or</span> <span class="hljs-string">&quot;&quot;</span>, n=<span class="hljs-number">0</span>} <span class="hljs-keyword">end</span></pre></div></div>
             
         </li>
         
@@ -394,7 +399,7 @@
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Num.new</span><span class="hljs-params">(at,name)</span></span> 
   i= with(Col.new(at,name), {Is=Num,some=Some.new(), lo=<span class="hljs-number">1E32</span>, hi=<span class="hljs-number">-1E32</span>})
   i.w = i.name:<span class="hljs-built_in">find</span><span class="hljs-string">&quot;+&quot;</span> <span class="hljs-keyword">and</span> <span class="hljs-number">1</span> <span class="hljs-keyword">or</span> i.name:<span class="hljs-built_in">find</span><span class="hljs-string">&quot;-&quot;</span> <span class="hljs-keyword">and</span> <span class="hljs-number">-1</span> <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>
-  <span class="hljs-keyword">return</span> i</pre></div></div>
+  <span class="hljs-keyword">return</span> i <span class="hljs-keyword">end</span></pre></div></div>
             
         </li>
         
@@ -440,7 +445,8 @@
               </div>
               <p>Spread around the central  tenancy means standard deviation
 (Aside: we all know that +- 1,2 standard deviations is 66,95% of the mass.
-Well, what else is true is that +- 1.28 standard deviations is 90% of the pass so (90-10)th/(1.28*2)
+Well, what else is true is that +- 1.28 standard deviations 
+is 90% of the pass. To say that another way, (90-10)th/(1.28*2)
 is one standard deviation.)</p>
 
             </div>

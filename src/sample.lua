@@ -10,7 +10,7 @@ function add(i,x)
     return i.Is.add(i,x) end end
 
 -- Report central tendency.
-function mid(i)    return i.Is.mid(i) end 
+function mid(i,...)    return i.Is.mid(i,...) end 
 
 -- Report the wriggle around the central tendancy.
 function spread(i) return i.Is.spread(i) end 
@@ -102,9 +102,9 @@ Sample={}
 function Sample.new(inits,       i)
   i = {Is=Sample, rows={},keep=true,cols={},names={},x={},y={}}
   if type(inits)=="table" then
-    for _,row in pairs(inits or {}) do add(i,row) end end
+    for _,lst in pairs(inits) do row(i,lst) end end
   if type(inits)=="string" then
-    for t in csv(inits) do row(i,t) end end
+    for lst in csv(inits) do row(i,lst) end end
   return i end
 
 -- Report the mid of certain columns (defaults to "use all")
@@ -124,7 +124,8 @@ function row(i,t)
       new  = what.new(at,name) 
       i.cols[1+#i.cols] = new
       if not name:find":" then
-        xy= (name:find"<" or name:find">" or name:find"!") and i.y or i.x
+        xy= (name:find"+" or name:find"-" or name:find"!") and i.y or i.x
+        print(name, #xy, name:find"+" or name:find"-" or name:find"!")
         xy[ 1+#xy ] = new
         if name:find"!" then i.klass = new end end end 
    end -----------------

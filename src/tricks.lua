@@ -8,7 +8,8 @@ do
   function srand(seed) Seed=seed or Seed0 end 
   -- return random num
   function rand(lo,hi)  
-    lo, hi, Seed = lo or 0, hi or 1, (16807 * Seed) % 2147483647 
+    lo, hi = lo or 0, hi or 1 
+    Seed = (16807 * Seed) % 2147483647 
     return lo + (hi-lo) * Seed / 2147483647 end 
   -- return random int
   function randi(lo,hi) 
@@ -47,13 +48,11 @@ function kopy(t,      seen,      res)
 
 -- Return index of `x` in  `t` (or  something close)
 function bchop(t,x) 
-   local lo,hi=1,#t
+   local lo, hi = 1, #t
    while lo <= hi do
       local mid =(lo+hi) // 2
-      if t[mid] > x then hi= mid-1 else lo= mid+1 end
-   end
-   return math.min(lo,#t)  
-end
+      if t[mid] > x then hi= mid-1 else lo= mid+1 end end
+   return lo>#t and #t or lo end
 
 --  ## String Stuff
 
