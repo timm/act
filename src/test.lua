@@ -9,6 +9,7 @@ function show(t,     u,mt,pre)
   pre = (getmetatable(t) or {})._name or ""
   return pre.. "("..table.concat(u,", ")..")" end
 
+function add(i,...) return i.is.add(i,...) end
 
 function Some:adds(t) for _,x in pairs(t) do self:add(x) end; return self end
 
