@@ -1,13 +1,18 @@
 require"about"
 require"tricks"
 
--- Polymorphism
+-- ## Dispatch 
+
 function add(i,x) 
   if x ~= "?" then
     i.n = i.n + 1
     return i.Is.add(i,x) end end
+
 function mid(i)    return i.Is.mid(i) end 
+
 function spread(i) return i.Is.spread(i) end 
+
+-- ## Some
 
 -- Reservoir sampler (of upper size of `max`). When full, delete anything at random.
 Some={}
@@ -27,6 +32,8 @@ function has(i)
 
 function per(i,p) a= a or has(i); return a[ ((p or .5)*#a) // 1 ] end
 
+-- ## Col
+
 -- Abstract class for columns.
 Col={}
 function Col.new(at,name,    w) 
@@ -34,8 +41,11 @@ function Col.new(at,name,    w)
   return {Is=Col, at=at or 1, name=name or "", n=0, w = w(name or "")} end
 
 function Col.add(i,x) return x end
+function Col.mid(i) return "?" end
+function Col.spread(i) return 0 end
 
--- counter for symbols
+-- ## Sym
+
 Sym={}
 function Sym.new(at, name)  
   return with(Col.new(at,name), {Is=Sym, has={}, mode="", most=0}) end
@@ -50,6 +60,8 @@ function Sym.spread(i,   e)
   for v in pairs(i.has) do e = e - v/i.n * math.log(v/i.n,2) end
   return e end
 
+-- ## Num
+
 -- counter for numbers
 Num={}
 function Num.new(at,name) 
@@ -61,38 +73,46 @@ function Num.add(i,x)
   if x < i.lo then i.lo = x end end
 
 function Num.mid(i)    return  per(i.some,.5) end
-function Num.spread(i) return (per(i.some,.9) - per(i.some,.1))/2.54 end
+function Num.spread(i) 
+  print(per(i.some,.1), per(i.some,.9))
+  print(per(i.some,.1), per(i.some,.9))
+  return (per(i.some,.9) - per(i.some,.1))/2.54 end
+
+-- ## Sample
 
 -- holder of rows and columns
 Sample={}
 function Sample.new(inits,       i)
-  i = {rows={},keep=true,cols={},names={},x={},y={}}
+  i = {Is=Sample, rows={},keep=true,cols={},names={},x={},y={}}
   for _,row in pairs(inits or {}) do add(i,row) end  
   return i end
- 
-function row(i,t) 
-  local function names2Column(      what,new,tmp)
-    i.names = t
-    for at,name in pairs(t)  do
-      what = name:find"~" and Col or (name:match("^[A-Z]") and Num or Sym)
-      new  = what.new(at,name) 
-      i.cols[1+#i.cols] = new
-      if not name:find"~" then
-        tmp= (name:find"<" or name:find">" or name:find"!") and i.y or i.x
-        tmp[ 1+#tmp ] = new
-        if name:find"!"then i.klass = new end end end 
-   end -----------------
-   local function data()
-     if i.keep then i.rows[ 1+#i.rows ] = t end
-     for _,col in pairs(i.cols) do add(col, t[col.at]) end 
-   end -------------------------------------------
-   if #i.names>0 then data() else names2Column() end end
 
 function Sample.mid(i) 
   t={}; for _,c in pairs(i.cols) do t[1+#t]=mid(c) end; return t end
 
 function Sample.spread(i) 
   t={}; for _,c in pairs(i.cols) do t[1+#t]=spread(c) end; return t end
+
+function ys(i,t)
+  t={}; for _,c in pairs(i.y) do t[1+#t]=mid(c) end; return t end
+
+function row(i,t) 
+  local function names2Column(      what,new,tmp)
+    i.names = t
+    for at,name in pairs(t)  do
+      what = name:find":" and Col or (name:match"^[A-Z]" and Num or Sym)
+      new  = what.new(at,name) 
+      i.cols[1+#i.cols] = new
+      if not name:find":" then
+        xy= (name:find"<" or name:find">" or name:find"!") and i.y or i.x
+        xy[ 1+#xy ] = new
+        if name:find"!" then i.klass = new end end end 
+   end -----------------
+   local function data()
+     if i.keep then i.rows[ 1+#i.rows ] = t end
+     for _,col in pairs(i.cols) do add(col, t[col.at]) end 
+   end -------------------------------------------
+   if #i.names>0 then data() else names2Column() end end
 
 function fromFile(i,file) for t in csv(file) do row(i,t) end; return i end
 

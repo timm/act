@@ -45,6 +45,16 @@ function kopy(t,      seen,      res)
   for k,v in pairs(t) do res[kopy(k,seen)]=kopy(v,seen) end
   return res end
 
+-- Return index of `x` in  `t` (or  something close)
+function bchop(t,x) 
+   local lo,hi=1,#t
+   while lo <= hi do
+      local mid =(lo+hi) // 2
+      if t[mid] > x then hi= mid-1 else lo= mid+1 end
+   end
+   return math.min(lo,#t)  
+end
+
 --  ## String Stuff
 
 -- Formatting strings
