@@ -73,10 +73,13 @@ function Num.add(i,x)
   if x < i.lo then i.lo = x end end
 
 function Num.mid(i)    return  per(i.some,.5) end
+
 function Num.spread(i) 
   print(per(i.some,.1), per(i.some,.9))
   print(per(i.some,.1), per(i.some,.9))
   return (per(i.some,.9) - per(i.some,.1))/2.54 end
+
+function norm(i,x) return math.abs(x-y)<1E-32 and 0 or (x-i.lo)/(i.hi-i.lo) end
 
 -- ## Sample
 
