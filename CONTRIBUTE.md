@@ -6,6 +6,10 @@ Note: validation  introduced very early.
 
 |week|file | notes|
 |----|-----|--------|
+|  1 |tricks| |
+|  1 |about | config |
+|  1 |sample| |
+|  2 |dist  | clustering, hyperparamters, fairness|
 |  1|about  | config defaults||
 |  1|cli    | how to  override the defaults (from the command line); and (2) run test cases|
 |  2|sample | how to collect  statistics on columns  of data, incremental standard deviation,reservoir sampling|

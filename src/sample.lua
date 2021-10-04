@@ -1,5 +1,4 @@
 require"about"
-require"tricks"
 
 -- ## Dispatch 
 
@@ -99,8 +98,8 @@ function norm(i,x) return math.abs(x-y)<1E-32 and 0 or (x-i.lo)/(i.hi-i.lo) end
 
 -- holder of rows and columns
 Sample={}
-function Sample.new(inits,       i)
-  i = {Is=Sample, rows={},keep=true,cols={},names={},x={},y={}}
+function Sample.new(the,inits,       i)
+  i = {Is=Sample, the=the,rows={},keep=true,cols={},names={},x={},y={}}
   if type(inits)=="table" then
     for _,lst in pairs(inits) do row(i,lst) end end
   if type(inits)=="string" then
