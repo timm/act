@@ -22,7 +22,7 @@ end
 function with(t,also) for k,v in pairs(also) do t[k]=v end return t end
 
 -- Sorting lists.
-function order(t) table.sort(t); return t  end
+function order(t,fun) table.sort(t,fun); return t  end
 
 -- Randomizing order or list
 function shuffle(t,the,     j)
@@ -53,6 +53,28 @@ function bchop(t,x)
       local mid =(lo+hi) // 2
       if t[mid] > x then hi= mid-1 else lo= mid+1 end end
    return lo>#t and #t or lo end
+
+function median(lst, get, sort)
+   get=get or function(x) return x[1] end,
+   sort = sort==nil and  true or  sort
+
+  local function triangular(t,   sum,n,ds,d)  
+    sum, ds = 0,0
+    for i=1,Lean.distance.k do 
+      d   = gap(t[i])
+      sum = sum + klass(t[i]) / d
+      ds  = ds + 1/d
+    end
+    return sum/ds
+  end 
+  local function combine(t,   kernel) --assumes t is sorted
+    kernel = Lean.distance.kernel
+    k      = Lean.distance.k
+    if     kernel=="triangle" then return triangular(t) 
+    elseif kernel=="median" then return klass(t[int(k/2)])
+    else   return klass(t[1])
+    end
+  end
 
 --  ## String Stuff
 
