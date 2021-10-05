@@ -8,6 +8,11 @@ for _ = 1,10^6 do som:add(randi(1000)) end
 shout(som:has())
 shout(som:per(.2))
 
+local sym=Sample.Sym:new()
+for _ = 1,10^6 do sym:add(randi(10)) end
+shout(sym)
+
+
 -- local s = Sample:new( "../data/auto93.csv")
 -- for _,v in pairs(s.cols) do print("has",show(v)) end
 -- assert(s.cols[1].hi==8)

@@ -16,7 +16,11 @@ do
     return math.floor(0.5 + rand(lo,hi)) end 
 end
 
-function any(t)
+function any(t) return t[ randi(1,#t) ] end
+function anys(t, u) 
+  u={}; for _,_ in pairs(t) do u[1+#u]=any(t) end; return u end
+
+function pick(t)
   -- x={"flag",default, help,int|flat|oneof
   local one=function (lo,hi,by) n=(hi-lo)/by; return lo+by*rand(1,n) end 
   v=t.float; if v then return one(v[1], v[2], v[3])    end --{float={lo,hi,by}}
