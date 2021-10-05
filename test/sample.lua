@@ -1,16 +1,25 @@
 package.path = '../src/?.lua'
-local Sample=require"sample"
+local sys=require"sample"
 srand(1)
 print(rand(),rand(), rand())
 
-local som=Sample.Some:new(32) 
-for _ = 1,10^6 do som:add(randi(1000)) end
-shout(som:has())
-shout(som:per(.2))
+print(sys.Some.__call)
+local som=sys.Some(32) 
+print(som)
+som:add(100)
 
-local sym=Sample.Sym:new()
-for _ = 1,10^6 do sym:add(randi(10)) end
-shout(sym)
+
+local sym=sys.Sym()
+sym:add("a"); sym:add("sba")
+print(sym:spread())
+--
+-- for _ = 1,10^6 do som:add(randi(1000)) end
+-- shout(som:has())
+-- shout(som:per(.2))
+-- --
+-- local sym=Sample.Sym:new()
+-- for _ = 1,10^6 do sym:add(randi(10)) end
+-- shout(sym)
 
 
 -- local s = Sample:new( "../data/auto93.csv")

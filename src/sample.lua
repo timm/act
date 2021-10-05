@@ -5,23 +5,24 @@ require"about"
 -- Reservoir sampler (of size of `max`). 
 local Some=klass"Some"
 function Some:new(max) 
-  return isa(Some,{n=0, max=max or 256, old=true, Has={}}) end
+  print("newsome",max)
+  return isa(Some,{n=0, max=max or 256, old=true, _has={}}) end
 
 --Add to a reservoir sampling. If full, replace anything at random.
 function Some:add(x) 
   if x ~= "?" then
     self.n = self.n + 1
-    if #self.Has < self.max then pos = 1+#self.Has 
-    elseif rand() < self.max/self.n then pos = 1+(rand()*#self.Has)//1 end 
+    if #self._has < self.max then pos = 1+#self._has 
+    elseif rand() < self.max/self.n then pos = 1+(rand()*#self._has)//1 end 
     if pos then 
       self.old=true
-      self.Has[pos]=x end end end
+      self._has[pos]=x end end end
 
 -- Return the contents, sorted.
 function Some:has()  
-  if self.old then table.sort(self.Has) end
+  if self.old then table.sort(self._has) end
   self.old = false
-  return self.Has end
+  return self._has end
 
 -- Report the `p-th` value within the sorted contents.
 function Some:per(p) a= self:has(i); return a[ ((p or .5)*#a) // 1 ] end
@@ -57,7 +58,8 @@ function Sym:mid() return self.mode end
 
 -- `Spread` means entropy.
 function Sym:spread(    e)
-  for v in pairs(self.has) do e = e - v/self.n * math.log(v/self.n,2) end
+  e=0
+  for _,v in pairs(self.has) do e = e - v/self.n * math.log(v/self.n,2) end
   return e end
 
 -- ## Num

@@ -73,19 +73,11 @@ function fmt(...) return string.format(...) end
 
 -- table to string
 function out(t,     s,u,mt,pre,ks)
-  if type(t) ~= "table" then return tostring(t) end
-  local function keys(t)
-    for k,_ in  pairs(t) do return type(k)=="string" end end
-  local function public(x) 
-    if type(x)~="string" then return true end
-    return not x:match("^[A-Z]") end
-  u,ks = {},{}
-  keyed = keys(t)
-  for k,_ in pairs(t) do if public(k) then ks[1+#ks]=k end  end
-  for _,k in pairs(order(ks)) do 
-    v = t[k]
-    u[1+#u] = (keyed and k.."=" or "")..out(v) end 
-  return (t._name or "").."("..table.concat(u,", ")..")" end
+  tmp,ks = {},{}
+  for k,_ in pairs(t) do if k:sub(1,1) ~="_" then ks[1+#ks]=k end end
+  table.sort(ks)
+  for _,k in pairs(ks) do tmp[1+#tmp] = k.."="..tostring(t[k]) end
+  return (t._name or "").."("..table.concat(tmp,", ")..")" end
 
 -- print table to string
 function shout(t) print(out(t)) end
@@ -98,10 +90,11 @@ function color(s,...)
 -- ## OO Stuff
 
 -- Define a new klass.
-function klass(name)
-  k = {_name=name, __tostring=out}
+function klass(name,      k,mt)
+  k= {_name=name, __tostring=out}
   k.__index = k
-  return k end
+  mt={__call=function(self,...) return k.new(self,...) end}
+  return setmetatable(k,mt) end
 
 -- Create an instance that delegates to `self`.
 function isa(self,t,also) 
