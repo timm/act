@@ -11,9 +11,8 @@ function Some:new(max)
 function Some:add(x) 
   if x ~= "?" then
     self.n = self.n + 1
-    r = math.random
     if #self.Has < self.max then pos = 1+#self.Has 
-    elseif r() < self.max/self.n then pos = 1+(r()*#self.Has)//1 end 
+    elseif rand() < self.max/self.n then pos = 1+(rand()*#self.Has)//1 end 
     if pos then 
       self.old=true
       self.Has[pos]=x end end end
