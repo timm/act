@@ -24,8 +24,16 @@ function gaps(i,row1,rows, cols,   t)
   t={}
   for _,row2 in pairs(rows or i.rows) do 
     t[1+#t] = {gap(i,row1,row2,cols) ,row2} end
-  return order(t, function (x,y) return x[1] < y[1] end)
+  return order(t, function (x,y) return x[1] < y[1] end) end
 
+function  far(i,
+function triangular(i,row,rows,k,cols,k0,     sum,n,ds,d)  
+ sum, ds, k0 = 0, 0, (k0 or 1)
+ for i=k0,k do 
+   d   = gap(i, row, rows[i], cols)
+   sum = sum + klass(rows[i]) / d
+   ds  = ds + 1/d end
+ return sum/ds end 
 
 function div(i,rows,         one,two,three,tmp,c,a,b,l,r)
   one = lst.any(rows)

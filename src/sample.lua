@@ -1,142 +1,142 @@
 require"about"
 
--- ## Dispatch 
-
--- Add things that we aren't skipping (icnrementing `n` as we go).
-function add(i,x) 
-  if x ~= "?" then
-    i.n = i.n + 1
-    return i.Is.add(i,x) end end
-
--- Report central tendency.
-function mid(i,...)    return i.Is.mid(i,...) end 
-
--- Report the wriggle around the central tendancy.
-function spread(i) return i.Is.spread(i) end 
-
 -- ## Some
 
 -- Reservoir sampler (of size of `max`). 
-Some={}
-function Some.new(max) 
-  return {Is=Some, n=0, max=max or 256, old=true, Has={}} end
+local Some=klass"Some"
+function Some:new(max) 
+  return isa(Some,{n=0, max=max or 256, old=true, Has={}}) end
 
 --Add to a reservoir sampling. If full, replace anything at random.
-function Some.add(i,x) 
-  r = math.random
-  if     #i.Has < i.max     then pos = 1+#i.Has 
-  elseif r()    < i.max/i.n then pos = 1+(r()*#i.Has)//1 end 
-  if pos then 
-    i.old=true
-    i.Has[pos]=x end end
+function Some:add(x) 
+  if x ~= "?" then
+    self.n = self.n + 1
+    r = math.random
+    if #self.Has < self.max then pos = 1+#self.Has 
+    elseif r() < self.max/self.n then pos = 1+(r()*#self.Has)//1 end 
+    if pos then 
+      self.old=true
+      self.Has[pos]=x end end end
 
 -- Return the contents, sorted.
-function has(i)  
-  i.old= i.old and order(i.Has) or i.Has; i.old=false; return i.Has end
+function Some:has()  
+  if self.old then table.sort(self.Has) end
+  self.old = false
+  return self.Has end
 
 -- Report the `p-th` value within the sorted contents.
-function per(i,p) a= a or has(i); return a[ ((p or .5)*#a) // 1 ] end
+function Some:per(p) a= self:has(i); return a[ ((p or .5)*#a) // 1 ] end
 
 -- ## Col
 
 -- Abstract class for columns.
-Col={}
-function Col.new(at,name) return {Is=Col, at=at or 1, name=name or "", n=0} end
+local Col=klass"Col"
+function Col:new(at,name) return isa(Col,{at=at or 1,name=name or "",n=0}) end
 
 -- "Adding" means do nothing so the  central ten dances and spreads never change.
-function Col.add(i,x) return x end
-function Col.mid(i) return "?" end
-function Col.spread(i) return 0 end
+function Col:add(x) return x end
+function Col:mid() return "?" end
+function Col:spread() return 0 end
 
 -- ## Sym
 
 -- Counter for symbols.
-Sym={}
-function Sym.new(at, name)  
-  return with(Col.new(at,name), {Is=Sym, has={}, mode="", most=0}) end
+local Sym=klass"Sym"
+function Sym:new(at, name)  
+  return isa(Sym, Col:new(at,name), {has={}, mode="", most=0}) end
 
 -- Adding means updating symbol count (and the `mode`).
-function Sym.add(i,x) 
-  i.has[x] = 1 + (i.has[x] or 0)
-  if i.has[x] > i.most then i.most, i.mode = i.has[x], x end end
+function Sym:add(x) 
+  if x ~="?" then
+    self.n = self.n + 1
+    self.has[x] = 1 + (self.has[x] or 0)
+    if   self.has[x] > self.most 
+    then self.most,self.mode = self.has[x],x end end end
 
 -- `mid` means `mode`.
-function Sym.mid(i) return i.mode end
+function Sym:mid() return self.mode end
 
 -- `Spread` means entropy.
-function Sym.spread(i,   e)
-  for v in pairs(i.has) do e = e - v/i.n * math.log(v/i.n,2) end
+function Sym:spread(    e)
+  for v in pairs(self.has) do e = e - v/self.n * math.log(v/self.n,2) end
   return e end
 
 -- ## Num
 
 -- counter for numbers
-Num={}
-function Num.new(at,name) 
-  i= with(Col.new(at,name), {Is=Num,some=Some.new(), lo=1E32, hi=-1E32})
-  i.w = i.name:find"+" and 1 or i.name:find"-" and -1 or 0
-  return i end
+local Num=klass"Num"
+function Num:new(at,name) 
+  return isa(Num, Col:new(at,name), 
+             {some=Some.new(), lo=1E32, hi=-1E32,
+              w = i.name:find"+" and 1 or i.name:find"-" and -1 or 0}) end
 
 -- Keep some numbers, update `lo`, `hi`
-function Num.add(i,x)
-  add(i.some, x)
-  if x > i.hi then i.hi = x end
-  if x < i.lo then i.lo = x end end
+function Num:add(x)
+  self.some:add(x)
+  if x > self.hi then self.hi = x end
+  if x < self.lo then self.lo = x end end
 
 -- Central tendency.
-function Num.mid(i)    return  per(i.some,.5) end
+function Num:mid(i) return  self.some:per(.5) end
 -- Spread around the central  tenancy means standard deviation
 -- (Aside: we all know that +- 1,2 standard deviations is 66,95% of the mass.
 -- Well, what else is true is that +- 1.28 standard deviations 
 -- is 90% of the pass. To say that another way, (90-10)th/(1.28*2)
 -- is one standard deviation.)
-function Num.spread(i) return (per(i.some,.9) - per(i.some,.1))/2.54 end
+function Num:spread() return (self.some:per(.9) - self.some:per(.1))/2.54 end
 -- Normalize
-function norm(i,x) return math.abs(x-y)<1E-32 and 0 or (x-i.lo)/(i.hi-i.lo) end
+function Num:norm(x) 
+  return math.abs(x-y)<1E-32 and 0 or (x - self.lo)/(self.hi - self.lo) end
 
 -- ## Sample
 
 -- holder of rows and columns
-Sample={}
-function Sample.new(the,inits,       i)
-  i = {Is=Sample, the=the,rows={},keep=true,cols={},names={},x={},y={}}
+local Sample=klass"Sample"
+function Sample:new(the, inits,       i)
+  self = isa(Sample, {the=the,rows={},keep=true,
+                   klass=nil, cols={},names={},x={},y={}})
   if type(inits)=="table" then
-    for _,lst in pairs(inits) do row(i,lst) end end
+    for _,lst in pairs(inits) do self:row(lst) end end
   if type(inits)=="string" then
-    for lst in csv(inits) do row(i,lst) end end
-  return i end
+    for lst in csv(inits) do self:row(lst) end end
+  return self end
 
 -- Report the mid of certain columns (defaults to "use all")
-function Sample.mid(i, cols) 
-  t={}; for _,c in pairs(cols or i.cols) do t[1+#t]=mid(c) end; return t end
+function Sample:mid(cols) 
+  t={}; for _,c in pairs(cols or self.cols) do t[1+#t]=c:mid() end; return t end
 
 -- Report the spread of certain columns (defaults to "use all")
-function Sample.spread(i, cols) 
-  t={}; for _,c in pairs(cols or i.cols) do t[1+#t]=spread(c) end; return t end
+function Sample:spread(cols) 
+  t={}; for _,c in pairs(cols or self.cols) do t[1+#t]=c:spread() end; return t end
 
 -- Add new row. If this is the first row, the use the row to create columns.
-function row(i,t) 
+function Sample:add(t) 
   local function names2Column(      what,new,tmp)
-    i.names = t
+    self.names = t
     for at,name in pairs(t)  do
       what = name:find":" and Col or name:match"^[A-Z]" and Num or Sym
       new  = what.new(at,name) 
-      i.cols[1+#i.cols] = new
+      self.cols[1+#self.cols] = new
       if not name:find":" then
-        xy= (name:find"+" or name:find"-" or name:find"!") and i.y or i.x
+        xy= (name:find"+" or name:find"-" or name:find"!") and self.y or self.x
         print(name, #xy, name:find"+" or name:find"-" or name:find"!")
         xy[ 1+#xy ] = new
-        if name:find"!" then i.klass = new end end end 
+        if name:find"!" then self.klass = new end end end 
    end -----------------
-   local function data()
-     if i.keep then i.rows[ 1+#i.rows ] = t end
-     for _,col in pairs(i.cols) do add(col, t[col.at]) end 
+   local function row()
+     if self.keep then self.rows[ 1+#self.rows ] = t end
+     for _,col in pairs(self.cols) do add(col, t[col.at]) end 
    end -------------------------------------------
-   if #i.names>0 then data() else names2Column() end end
+   if #self.names>0 then row() else names2Column() end end
 
 -- Return a new sampler with same structure as `i`.
-function clone(i, inits,     i)
-   i = Sample.new()
-   add(i,i.names)
-   for _,row in pairs(inits or {}) do add(i,row) end
-   return i end
+function Sample:clone(inits,     i)
+   self = Sample:new(self.the)
+   add(self, self.names)
+   for _,row in pairs(inits or {}) do add(self, row) end
+   return self end
+
+-- Return the klass variable
+function Sample:klass(row) return row[self.klass.at] end
+
+return {Some=Some, Num=Num, Sym=Sym, Col=Col, Sample=Sample}

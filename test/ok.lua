@@ -6,7 +6,6 @@ require"tricks"
 local fails=0
 for _,f in pairs(arg) do
   if f ~= "ok.lua" and f ~= "lua" then
-    srand()
     local ok,msg = pcall(function () dofile(f) end) 
     if   ok 
     then color("green","%s",f)

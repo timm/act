@@ -3,7 +3,7 @@
 -- ## Random Stuff
 
 do 
-  local Seen0, Seed = {}, 10014, 10014
+  local Seed0, Seed = 10014, 10014
   -- set seed
   function srand(seed) Seed=seed or Seed0 end 
   -- return random num
@@ -16,6 +16,14 @@ do
     return math.floor(0.5 + rand(lo,hi)) end 
 end
 
+function any(t)
+  -- x={"flag",default, help,int|flat|oneof
+  local one=function (lo,hi,by) n=(hi-lo)/by; return lo+by*rand(1,n) end 
+  v=t.float; if v then return one(v[1], v[2], v[3])    end --{float={lo,hi,by}}
+  v=t.int;   if v then return one(v[1], v[2], v[3])//1 end --{int={lo,hi,by}}
+  v=t.oneof; if v then return v[randi(1,#v)]           end --{oneof=listOfOptions}
+  end
+ 
 -- ## List stuff
 
 -- Combining two tables
@@ -48,33 +56,11 @@ function kopy(t,      seen,      res)
 
 -- Return index of `x` in  `t` (or  something close)
 function bchop(t,x) 
-   local lo, hi = 1, #t
-   while lo <= hi do
-      local mid =(lo+hi) // 2
-      if t[mid] > x then hi= mid-1 else lo= mid+1 end end
-   return lo>#t and #t or lo end
-
-function median(lst, get, sort)
-   get=get or function(x) return x[1] end,
-   sort = sort==nil and  true or  sort
-
-  local function triangular(t,   sum,n,ds,d)  
-    sum, ds = 0,0
-    for i=1,Lean.distance.k do 
-      d   = gap(t[i])
-      sum = sum + klass(t[i]) / d
-      ds  = ds + 1/d
-    end
-    return sum/ds
-  end 
-  local function combine(t,   kernel) --assumes t is sorted
-    kernel = Lean.distance.kernel
-    k      = Lean.distance.k
-    if     kernel=="triangle" then return triangular(t) 
-    elseif kernel=="median" then return klass(t[int(k/2)])
-    else   return klass(t[1])
-    end
-  end
+  local lo, hi = 1, #t
+  while lo <= hi do
+    local mid =(lo+hi) // 2
+    if t[mid] > x then hi= mid-1 else lo= mid+1 end end
+  return lo>#t and #t or lo end
 
 --  ## String Stuff
 
@@ -82,7 +68,7 @@ function median(lst, get, sort)
 function fmt(...) return string.format(...) end
 
 -- table to string
-function show(t,     s,u,mt,pre,ks)
+function out(t,     s,u,mt,pre,ks)
   if type(t) ~= "table" then return tostring(t) end
   local function keys(t)
     for k,_ in  pairs(t) do return type(k)=="string" end end
@@ -94,16 +80,29 @@ function show(t,     s,u,mt,pre,ks)
   for k,_ in pairs(t) do if public(k) then ks[1+#ks]=k end  end
   for _,k in pairs(order(ks)) do 
     v = t[k]
-    u[1+#u] = (keyed and k.."=" or "")..show(v) end 
-  return "("..table.concat(u,", ")..")" end
+    u[1+#u] = (keyed and k.."=" or "")..out(v) end 
+  return (t._name or "").."("..table.concat(u,", ")..")" end
 
 -- print table to string
-function shop(t) print(show(t)) end
+function shout(t) print(out(t)) end
 
 -- Color a string
 function color(s,...)
   local all = {red=31, green=32, yellow=33, purple=34}
     print('\27[1m\27['.. all[s] ..'m'..fmt(...)..'\27[0m') end
+
+-- ## OO Stuff
+
+-- Define a new klass.
+function klass(name)
+  k = {_name=name, __tostring=out}
+  k.__index = k
+  return k end
+
+-- Create an instance that delegates to `self`.
+function isa(self,t,also) 
+  for k,v in pairs(also or {}) do t[k] =v end 
+  return setmetatable(t,self) end
 
 -- ## File Stuff
 

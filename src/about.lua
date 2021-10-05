@@ -1,6 +1,6 @@
 -- ## Config Options
 require"tricks"
-
+     
 function about() return {
   seed=   cli( "S",   10014, 'Seed for random numbers'),
   help=   cli( "h",   false, 'show  help'),
