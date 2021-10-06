@@ -123,7 +123,6 @@ function Sample:add(t)
     for at,name in pairs(t)  do
       what = name:find":" and Col or name:match"^[A-Z]" and Num or Sym
       new  = what(at,name) 
-      print("\n::",name, what._name,new)
       self.cols[1+#self.cols] = new
       if not name:find":" then
         xy= (name:find"+" or name:find"-" or name:find"!") and self.y or self.x
