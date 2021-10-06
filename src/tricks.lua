@@ -72,9 +72,9 @@ function bchop(t,x)
 function fmt(...) return string.format(...) end
 
 -- table to string
-function out(t,     s,u,mt,pre,ks)
+function out(t,     tmp,ks)
   tmp,ks = {},{}
-  for k,_ in pairs(t) do if k:sub(1,1) ~="_" then ks[1+#ks]=k end end
+  for k,_ in pairs(t) do if k:sub(1,1) ~= "_" then  ks[1+#ks]=tostring(k)  end end
   table.sort(ks)
   for _,k in pairs(ks) do tmp[1+#tmp] = k.."="..tostring(t[k]) end
   return (t._name or "").."("..table.concat(tmp,", ")..")" end
@@ -90,16 +90,14 @@ function color(s,...)
 -- ## OO Stuff
 
 -- Define a new klass.
-function klass(name,      k,mt)
+function klass(name,     k,mt)
   k= {_name=name, __tostring=out}
   k.__index = k
   mt={__call=function(self,...) return k.new(self,...) end}
   return setmetatable(k,mt) end
 
--- Create an instance that delegates to `self`.
-function isa(self,t,also) 
-  for k,v in pairs(also or {}) do t[k] =v end 
-  return setmetatable(t,self) end
+-- Assign a meta table (never been happy with argument order in `setmetatable`.
+function uses(mt,t) return setmetatable(t,mt) end
 
 -- ## File Stuff
 

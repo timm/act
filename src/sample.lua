@@ -5,18 +5,16 @@ require"about"
 -- Reservoir sampler (of size of `max`). 
 local Some=klass"Some"
 function Some:new(max) 
-  print("newsome",max)
-  return isa(Some,{n=0, max=max or 256, old=true, _has={}}) end
+  return uses(Some, {n=0, max=max or 256, old=true, _has={}}) end
 
 --Add to a reservoir sampling. If full, replace anything at random.
 function Some:add(x) 
-  if x ~= "?" then
-    self.n = self.n + 1
-    if #self._has < self.max then pos = 1+#self._has 
-    elseif rand() < self.max/self.n then pos = 1+(rand()*#self._has)//1 end 
-    if pos then 
-      self.old=true
-      self._has[pos]=x end end end
+  self.n = self.n + 1
+  if #self._has < self.max then pos = 1+#self._has 
+  elseif rand() < self.max/self.n then pos = 1+(rand()*#self._has)//1 end 
+  if pos then 
+    self.old=true
+    self._has[pos]=x end end 
 
 -- Return the contents, sorted.
 function Some:has()  
@@ -25,57 +23,41 @@ function Some:has()
   return self._has end
 
 -- Report the `p-th` value within the sorted contents.
-function Some:per(p) a= self:has(i); return a[ ((p or .5)*#a) // 1 ] end
+function Some:per(p) a= self:has(); return a[ ((p or .5)*#a) // 1 ] end
 
 -- ## Col
+function col(at,name,t)
+  t= t or {}
+  t.at, t.name, t.n = at or 1, name or "", 0
+  t.w = t.name:find"+" and 1 or t.name:find"-" and -1 or 0
+  return t end
+
+-- ## Skip
 
 -- Abstract class for columns.
-local Col=klass"Col"
-function Col:new(at,name) return isa(Col,{at=at or 1,name=name or "",n=0}) end
+local Skip=klass"Skip"
+function Skip:new(at,name) return uses(Col, col(at,name)) end
 
 -- "Adding" means do nothing so the  central ten dances and spreads never change.
-function Col:add(x) return x end
-function Col:mid() return "?" end
-function Col:spread() return 0 end
-
--- ## Sym
-
--- Counter for symbols.
-local Sym=klass"Sym"
-function Sym:new(at, name)  
-  return isa(Sym, Col:new(at,name), {has={}, mode="", most=0}) end
-
--- Adding means updating symbol count (and the `mode`).
-function Sym:add(x) 
-  if x ~="?" then
-    self.n = self.n + 1
-    self.has[x] = 1 + (self.has[x] or 0)
-    if   self.has[x] > self.most 
-    then self.most,self.mode = self.has[x],x end end end
-
--- `mid` means `mode`.
-function Sym:mid() return self.mode end
-
--- `Spread` means entropy.
-function Sym:spread(    e)
-  e=0
-  for _,v in pairs(self.has) do e = e - v/self.n * math.log(v/self.n,2) end
-  return e end
+function Skip:add(x) return x end
+function Skip:mid() return "?" end
+function Skip:spread() return 0 end
 
 -- ## Num
 
 -- counter for numbers
 local Num=klass"Num"
 function Num:new(at,name) 
-  return isa(Num, Col:new(at,name), 
-             {some=Some.new(), lo=1E32, hi=-1E32,
-              w = i.name:find"+" and 1 or i.name:find"-" and -1 or 0}) end
+  name = name or ""
+  return uses(Num, col(at,name,{fred=100, lo=1E32, hi=-1E32,some=Some()})) end
 
 -- Keep some numbers, update `lo`, `hi`
 function Num:add(x)
-  self.some:add(x)
-  if x > self.hi then self.hi = x end
-  if x < self.lo then self.lo = x end end
+  if x ~= "?" then
+    self.n = self.n+1
+    self.some:add(x)
+    if x > self.hi then self.hi = x end
+    if x < self.lo then self.lo = x end end end
 
 -- Central tendency.
 function Num:mid(i) return  self.some:per(.5) end
@@ -89,17 +71,41 @@ function Num:spread() return (self.some:per(.9) - self.some:per(.1))/2.54 end
 function Num:norm(x) 
   return math.abs(x-y)<1E-32 and 0 or (x - self.lo)/(self.hi - self.lo) end
 
+-- ## Sym
+
+-- Counter for symbols.
+local Sym=klass"Sym"
+function Sym:new(at, name)  
+  return uses(Sym, col(at,name,{has={}, mode="", most=0})) end
+
+-- Adding means updating symbol count (and the `mode`).
+function Sym:add(x) 
+  if x ~= "?" then
+    self.n = self.n+1
+    self.has[x] = 1 + (self.has[x] or 0)
+    if   self.has[x] > self.most 
+    then self.most,self.mode = self.has[x],x end end  end
+
+-- `mid` means `mode`.
+function Sym:mid() return self.mode end
+
+-- `Spread` means entropy.
+function Sym:spread(    e)
+  e=0
+  for _,v in pairs(self.has) do e = e - v/self.n * math.log(v/self.n,2) end
+  return e end
+
 -- ## Sample
 
 -- holder of rows and columns
 local Sample=klass"Sample"
 function Sample:new(the, inits,       i)
-  self = isa(Sample, {the=the,rows={},keep=true,
+  self = uses(Sample, {the=the,rows={},keep=true,
                    klass=nil, cols={},names={},x={},y={}})
   if type(inits)=="table" then
-    for _,lst in pairs(inits) do self:row(lst) end end
+    for _,lst in pairs(inits) do self:add(lst) end end
   if type(inits)=="string" then
-    for lst in csv(inits) do self:row(lst) end end
+    for lst in csv(inits) do self:add(lst) end end
   return self end
 
 -- Report the mid of certain columns (defaults to "use all")
@@ -116,17 +122,17 @@ function Sample:add(t)
     self.names = t
     for at,name in pairs(t)  do
       what = name:find":" and Col or name:match"^[A-Z]" and Num or Sym
-      new  = what.new(at,name) 
+      new  = what(at,name) 
+      print("\n::",name, what._name,new)
       self.cols[1+#self.cols] = new
       if not name:find":" then
         xy= (name:find"+" or name:find"-" or name:find"!") and self.y or self.x
-        print(name, #xy, name:find"+" or name:find"-" or name:find"!")
         xy[ 1+#xy ] = new
         if name:find"!" then self.klass = new end end end 
    end -----------------
    local function row()
      if self.keep then self.rows[ 1+#self.rows ] = t end
-     for _,col in pairs(self.cols) do add(col, t[col.at]) end 
+     for _,col in pairs(self.cols) do col:add( t[col.at]) end 
    end -------------------------------------------
    if #self.names>0 then row() else names2Column() end end
 
