@@ -1,15 +1,16 @@
--- ## Config Options
-require"tricks"
-     
-function about() return {
-  seed=   cli( "S",   10014, 'Seed for random numbers'),
-  help=   cli( "h",   false, 'show  help'),
-  loud=   cli( "l",   false, 'set verbose'),
-  dist= {
-    far=  cli( "f",      .9, 'where to look for far things'),
-    p=    cli( "p",       2, 'distance calculation exponent'),
-    some= cli( "s",     128, 'number of neighbors to explore')},
-  eg= {
-    todo= cli( "t", "hello", 'startup action'),
-    wild= cli( "w",   false, 'run egs, no protection (wild mode)')}
-} end
+local function cli(flag, b4)
+  for n,v in pairs(arg) do if v==flag then 
+    return (b4==false) and true or (tonumber(arg[n+1]) or arg[n+1]) end end 
+  return b4 end
+
+return {
+  combine= cli("-c", "mode"),
+  data=    cli("-d", "../data/auto93.csv"),
+  k=       cli("-k", 2),  
+  p=       cli("-p", 2), 
+  seed=    cli("-S", 10014),   -- random number see
+  some=    cli("-s", 256),     -- use this many randomly nearest neighbors
+  todo=    cli("-t", "hello"), -- default start up is to run Eg["todo"]
+  wait=    cli("-w", 10)       -- start classifying after this many rows
+ }
+
