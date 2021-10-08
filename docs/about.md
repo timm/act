@@ -1,6 +1,6 @@
 Inexact, but Reasonable   
-(c) Tim Menzies, Jamie Jennings 2022
-------------
+(c) Tim Menzies, Jamie Jennings 2022    
+-------------     
 [about](about.md) :: [ish](is.md) :: [etc](etc.md)    
 
 
