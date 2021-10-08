@@ -10,7 +10,7 @@ The behavior of inexact algorithms is determins by numerous control options.
 
 Exploring those options is intself an ineaxt process since it means trading off mulitlple design considerations.
 
-- **RULE**: The users of inexact alogirhms need some method to quickly explore all those options (in a multi-objective space).
+- **LESSON**: The users of inexact alogirhms need some method to quickly explore all those options (in a multi-objective space).
 
 
 ```lua
