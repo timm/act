@@ -98,7 +98,7 @@ Plugin 'jnurmine/Zenburn'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'nvie/vim-flake8'
 Plugin 'seebi/dircolors-solarized'
-Plugin 'vim-syntastic/syntastic'
+"Plugin 'vim-syntastic/syntastic'
 Plugin 'nequo/vim-allomancer'
 Plugin 'julialang/julia-vim'
 Plugin 'nanotech/jellybeans.vim'
@@ -122,7 +122,7 @@ filetype plugin on
 "let g:autopep8_disable_show_diff=1
 "let g:autopep8_ignore="E261,E302,E704,E701,E401"
 "autocmd FileType python noremap <buffer> <F8> :call Autopep8()<CR>
-autocmd Filetype lua setlocal ts=3 sw=3 sts=0 expandtab
+autocmd Filetype lua setlocal ts=2 sw=2 sts=0 expandtab
 colorscheme harlequin
 nmap <F9> :TagbarToggle<CR>
 nnoremap <Leader><space> :noh<cr>
