@@ -48,6 +48,7 @@ function shuffle(t,     j)
 -- First few items in a list
 function top(n,t,     u) 
   n = math.min(n,#t)
+  print("n3",n)
   u={}; for i=1,n do u[i]=t[i] end; return u end
 
 -- ## Sys stuff

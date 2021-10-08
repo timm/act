@@ -6,6 +6,7 @@ local function cli(flag, b4)
 return {
   combine= cli("-c", "mode"),
   data=    cli("-d", "../data/auto93.csv"),
+  far=     cli("-f", .9),
   k=       cli("-k", 2),  
   p=       cli("-p", 2), 
   seed=    cli("-S", 10014),   -- random number see

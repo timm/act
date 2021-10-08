@@ -81,36 +81,41 @@ function Sample:distance(row1,row2,cols)
     n   = n + 1 end
   return (d/n)^(1/p) end
     
-function Sample:neighbors(r1,rows,cols,    t)
+function Sample:neighbors(row1,rows,cols,    t)
+  rows = rows or top(self.my.some, shuffle(self.rows))
   t={}
-  rows = rows or top(self.my.some, shuffle(t))
-  print("rows",#rows)
   for _,row2 in pairs(rows) do 
     push(t, {self:distance(row1,row2,cols),row2}) end
   table.sort(t, function (x,y) return x[1] < y[1] end)
   return t end
 
+function Sample:faraway(row1,rows,cols,    tmp)
+  tmp = self:neighbors(row1,rows,cols)
+  return tmp[self.my.far * #tmp // 1] end
+
 function Sample:klass(row) return row[self._klass.at] end
 
+local function mode(sample,t)
+  local seen=Sym.new()
+  for n,x in pairs(t) do 
+    seen:add(sample:klass(x[2])) end
+  return seen.mode end 
+
+local function triangle(sample,t)
+  local seen,n = Sym.new(),0
+  for m,_ in pairs(t) do n = n + m end
+  for m,x in pairs(t) do
+    for _ = 1,(#t-m+1) do 
+      seen:add(sample:klass(x[2])) end end 
+  return seen.mode end
+
 local function knn(my,  s)
-  local function mode(t,    s)
-    s=Sym()
-    for _,v in pairs(t) do s:add(s:klass(v[2])) end
-    return s.mode 
-  end -------------------------
-  local function triangle(t, s)
-    s,n = Sym(),0
-    for m,_ in pairs(t) do n = n + m end
-    for m,x in pairs(t) do
-       for _ = 1,(#t-m+1)/n do s:add(s:klass(v[2])) end end 
-    return s.mode 
-  end -------------------
-  local function classify(row) 
+   local function classify(row) 
     for k,x in pairs(s:neighbors(row)) do
       if k>s.my.k then break end
       push(tmp,x) end 
     how= {mode=mode, triangle=triangle}
-    return how[my.combine](t) 
+    return how[my.combine](s, t) 
   end ----------
   s=Sample.new()
   for n,t in csv(my.data) do 
@@ -133,6 +138,13 @@ function eg.num(my,    n)
   n:add(1):add(2):add(3) 
   print(n.hi) end
 
+function eg.german(my,    s)
+  my.data = "../data/german.csv"
+  s=Sample.new(my, my.data)
+  print(#s.rows)
+  print(s)
+end
+
 -- Load a csv into a `Sample`.
 function eg.sample(my,    s)
   s=Sample.new(my, my.data)
@@ -150,15 +162,25 @@ function eg.shuffle(my)
 -- Check distances
 function eg.dist(my,  s,n,tmp)
   s=Sample.new(my, my.data)
-  n=0
   for _,row1 in pairs(s.rows) do
     tmp = s:neighbors(row1)
-    n=n+1
-    if n> 5 then return end
     print("")
-    print(n,cat(row1))
-    print(n,tmp[1])
+    print(cat(row1))
+    print(cat(tmp[2][2]), tmp[2][1])
+    print(cat(tmp[#tmp][2]), tmp[#tmp][1])
+    return 
 end end
+
+-- Check distances
+function eg.gangle(my,  s,n,tmp)
+  my.data = "../data/german.csv"
+  s = Sample.new(my, my.data)
+  for _,row1 in pairs(s.rows) do
+    tmp = s:neighbors(row1)
+    --prinnt(s:klass(row1),mode(s, top(2,tmp))) 
+    print(10)
+    print(mode(s, top(3,tmp))) 
+    end end
 
 -- Run all `todo`s.
 function eg.all(my,   t)
