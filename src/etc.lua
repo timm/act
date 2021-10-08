@@ -16,7 +16,7 @@ function klass(name,  k) k={_name=name,__tostring=out};k.__index=k; return k end
 function atom(x) return tonumber(x) or x end
 
 -- Print a flat string of a table
-function cat(t) return "("..table.concat(t,", ")..")" end
+function cat(t,s) return "("..table.concat(t,s or ", ")..")" end
 
 -- Print a nested string of a table
 function shout(t) print(out(t)) end
@@ -48,6 +48,7 @@ function shuffle(t,     j)
 -- First few items in a list
 function top(n,t,     u) 
   n = math.min(n,#t)
+  print("n3",n)
   u={}; for i=1,n do u[i]=t[i] end; return u end
 
 -- ## Sys stuff
@@ -82,4 +83,4 @@ function main(todo,my,b4,     x)
 end
 
 return {cat=cat,main=main,csv=csv,isa=isa, klass=klass,
-        push=push,atom=atom,shout=shout,out=out} 
+        shuffle=shuffle,top=top,push=push,atom=atom,shout=shout,out=out} 
