@@ -3,6 +3,7 @@ local etc=require"etc"
 local about=require"about"
 local isa,klass,push,atom= etc.isa,etc.klass,etc.push,etc.atom
 local cat,shout,out,go   = etc.cat,etc.shout, etc.out, etc.og
+local top,shuffle        = etc.top, etc.shuffle
 local main,csv = etc.main, etc.csv
 
 local Sym,Skip,Num,Sample,eg
@@ -40,7 +41,7 @@ function Num:dist(x,y)
   else   x,y = self:norm(x), self:norm(y)  end
   return math.abs(x-y) end
 function Num:norm(x)
-  lo,hi=self.lo,self.hi
+  local lo,hi=self.lo,self.hi
   return (x=="?" and x) or (math.abs(lo-hi)<1E-32 and 0) or (x-lo)/(hi-lo) end  
 
 -- Somewhere to store rows, summarized into columns.
@@ -48,7 +49,7 @@ Sample=klass"Sample"
 function Sample.new(my, inits,    it) 
   it =  isa(Sample,{my=my,ys={},xs={},xys={},head={},rows={},keep=true}) 
   if type(inits)=="table"  then for _,t in pairs(inits) do it:add(t) end end
-  if type(inits)=="string" then for _,t in csv(inits)   do print(1); it:add(t) end end
+  if type(inits)=="string" then for _,t in csv(inits)   do it:add(t) end end
   return it end
 
 function Sample:add(new)
@@ -71,6 +72,7 @@ function Sample:add(new)
         push(isGoal(txt) and self.ys or self.xs, col) end end end end
 
 function Sample:distance(row1,row2,cols)
+  local d,n,p,x,y,inc
   d, n, p = 0, 1E-32, self.my.p
   for _,col in pairs(cols or self.xs) do
     x,y = row1[col.at],row2[col.at]
@@ -82,6 +84,7 @@ function Sample:distance(row1,row2,cols)
 function Sample:neighbors(r1,rows,cols,    t)
   t={}
   rows = rows or top(self.my.some, shuffle(t))
+  print("rows",#rows)
   for _,row2 in pairs(rows) do 
     push(t, {self:distance(row1,row2,cols),row2}) end
   table.sort(t, function (x,y) return x[1] < y[1] end)
@@ -116,16 +119,21 @@ local function knn(my,  s)
 
 -- ## Examples
 eg={}
+-- Default action.
 function eg.hello(my) shout(my) end
 
+-- Iterate through a csv file.
 function eg.csv(my,   n)
-  n=0; for r,row in csv(my.data) do if r>1 then n=n+row[4] end end; print(n) end
+  n=0; for r,row in csv(my.data) do 
+  if r>1 then n=n+row[4] end end; print(n) end
 
+-- Use a `Num`.
 function eg.num(my,    n)
   n=Num.new()
   n:add(1):add(2):add(3) 
   print(n.hi) end
 
+-- Load a csv into a `Sample`.
 function eg.sample(my,    s)
   s=Sample.new(my, my.data)
   print(s.xys[1].lo, s.xys[1].hi) 
@@ -134,15 +142,33 @@ function eg.sample(my,    s)
   print(s)
 end
 
-function eg.dist(my,  s)
+-- Check distances
+function eg.shuffle(my)
+  for i=1,20 do
+    print(cat(top(2,shuffle{"a","b","c","d"}),"")) end end
+
+-- Check distances
+function eg.dist(my,  s,n,tmp)
   s=Sample.new(my, my.data)
   n=0
   for _,row1 in pairs(s.rows) do
-    if n> 20 then break end
-    for _,row2 in pairs(s.rows) do
-      n=n+1
-      print(cat(row1))
-      print(cat(row2), s:distance(row1,row2)) end end end
+    tmp = s:neighbors(row1)
+    n=n+1
+    if n> 5 then return end
+    print("")
+    print(n,cat(row1))
+    print(n,tmp[1])
+end end
+
+-- Run all `todo`s.
+function eg.all(my,   t)
+  for v,f in pairs(eg) do if v~="all" then
+    print(v); math.randomseed(my.seed); f(my) end end end
+
+-- List all `todo`s.
+function eg.ls(my,   t)
+  t={};for v,_ in pairs(eg) do push(t,v) end 
+  table.sort(t); print("lua ish.lua -t ",cat(t," | ")) end
 
 -- ## Start up
 main(eg,about,b4)

@@ -16,7 +16,7 @@ function klass(name,  k) k={_name=name,__tostring=out};k.__index=k; return k end
 function atom(x) return tonumber(x) or x end
 
 -- Print a flat string of a table
-function cat(t) return "("..table.concat(t,", ")..")" end
+function cat(t,s) return "("..table.concat(t,s or ", ")..")" end
 
 -- Print a nested string of a table
 function shout(t) print(out(t)) end
@@ -82,4 +82,4 @@ function main(todo,my,b4,     x)
 end
 
 return {cat=cat,main=main,csv=csv,isa=isa, klass=klass,
-        push=push,atom=atom,shout=shout,out=out} 
+        shuffle=shuffle,top=top,push=push,atom=atom,shout=shout,out=out} 
