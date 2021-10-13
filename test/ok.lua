@@ -1,4 +1,3 @@
-package.path = '../src/?.lua'
 
 local b4={}; for k,v in pairs(_ENV) do b4[k]=v end
 require"tricks"
