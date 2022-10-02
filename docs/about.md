@@ -1,4 +1,4 @@
-Inexact, but Reasonable   
+In exact, but Reasonable   
 (c) Tim Menzies, Jamie Jennings 2022    
 -------------     
 [about](about.md) :: [ish](is.md) :: [etc](etc.md)    
@@ -6,7 +6,7 @@ Inexact, but Reasonable
 
 # Options
     
-The behavior of inexact algorithms is determins by numerous control options.
+The behavior of inexact algorithms is determined by numerous control options.
 
 Exploring those options is intself an ineaxt process since it means trading off mulitlple design considerations.
 
@@ -31,3 +31,6 @@ local  defaults= {
 }
 return function(  t) t={}; for k,v in pairs(defaults) do t[k]=v end; return t ed
 ```
+
+
+Note thatdifferent ption settings means that we see different outputs.
